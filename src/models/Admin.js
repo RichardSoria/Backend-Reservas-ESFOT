@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-
+import crypto from "crypto";
 
 // Esquema del administrador
 const adminSchema = new mongoose.Schema({
     cedula: {
         type: String,
         required: [true, 'La cédula es requerida'],
-        unique: [true, 'La cédula ya está registrada'],
+        unique: true,
         match: [/^\d{10}$/, 'La cédula debe tener 10 dígitos']
     },
     name: {
@@ -25,16 +25,16 @@ const adminSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, 'El correo es requerido'],
-        unique: [true, 'El correo ya está registrado'],
+        unique: true,
         lowercase: true,
         trim: true,
-        match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'El correo no es válido']
+        match: [/^[a-zA-Z]+\.[a-zA-Z]+[0-9]*@epn\.edu\.ec$/, 'El correo debe ser institucional.']
     },
     password: {
         type: String,
         required: [true, 'La contraseña es requerida'],
         minlength: [8, 'La contraseña debe tener al menos 8 caracteres'],
-        match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, 'La contraseña debe tener al menos una minúscula, una mayúscula y un número']
+        match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, 'Debe tener al menos una minúscula, una mayúscula y un número']
     },
     phone: {
         type: String,
@@ -60,6 +60,10 @@ const adminSchema = new mongoose.Schema({
     resetToken: {
         type: String,
         default: null
+    },
+    resetTokenExpire: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
@@ -68,14 +72,12 @@ const adminSchema = new mongoose.Schema({
 // Método para encriptar la contraseña antes de guardar
 adminSchema.methods.encryptPassword = async function (password) {
     const salt = await bcrypt.genSalt(10);
-    const passwordEncrypted = await bcrypt.hash(password, salt);
-    return passwordEncrypted;
+    return await bcrypt.hash(password, salt);
 };
 
 // Método para comparar la contraseña ingresada con la almacenada
 adminSchema.methods.matchPassword = async function (password) {
-    const response = await bcrypt.compare(password, this.password);
-    return response;
+    return await bcrypt.compare(password, this.password);
 };
 
 // Método para actualizar el último inicio de sesión
@@ -93,11 +95,28 @@ adminSchema.methods.failedLoginAttempt = async function () {
     await this.save();
 };
 
-// Método para crear un token de autenticación
-adminSchema.methods.createToken = function () {
-    const token = this.token = Math.random().toString(36).substring(2);
-    return token;
+// Método para verificar si el usuario está bloqueado
+adminSchema.methods.isLocked = function () {
+    return this.lockUntil && this.lockUntil > Date.now();
+};
+
+// Método para desbloquear automáticamente después del tiempo de bloqueo
+adminSchema.methods.unlockAccount = async function () {
+    if (this.lockUntil && this.lockUntil < Date.now()) {
+        this.loginAttempts = 0;
+        this.lockUntil = null;
+        await this.save();
+    }
+};
+
+// Método para generar un token de recuperación seguro
+adminSchema.methods.createResetToken = async function () {
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    this.resetToken = resetToken;
+    this.resetTokenExpire = Date.now() + 3600000;
+    await this.save();
+    return resetToken;
 };
 
 // Crear el modelo de administrador
-export default model('Admin', adminSchema);
+export default mongoose.model('Admin', adminSchema);

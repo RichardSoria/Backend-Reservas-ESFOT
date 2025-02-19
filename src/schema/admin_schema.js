@@ -1,3 +1,31 @@
+export const loginAdminSchema = {
+    body: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+            email: {
+                type: 'string',
+                minLength: 1,
+                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
+            },
+            password: {
+                type: 'string',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
+            }
+        },
+        additionalProperties: false
+    }
+};
+
 export const registerAdminSchema = {
     body: {
         type: 'object',
@@ -22,45 +50,27 @@ export const registerAdminSchema = {
             },
             email: {
                 type: 'string',
+                minLength: 1,
                 pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
-                errorMessage: "El correo debe ser institucional."
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
             },
             password: {
                 type: 'string',
                 minLength: 8,
-                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$',
-                errorMessage: 'La contraseña debe tener al menos una minúscula, una mayúscula y un número'
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
             },
             phone: {
                 type: 'string',
                 pattern: '^[0-9]{10}$',
                 errorMessage: 'El teléfono debe tener exactamente 10 dígitos numéricos'
-            },
-            status: {
-                type: 'boolean',
-                default: true,
-                errorMessage: 'El estado debe ser un valor booleano'
             }
         }
-    }
-};
-
-export const loginAdminSchema = {
-    body: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-            email: { 
-                type: 'string',
-                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
-                errorMessage: "El correo debe ser institucional."
-            },
-            password: { 
-                type: 'string', 
-                minLength: 8, 
-                errorMessage: "La contraseña debe tener al menos 8 caracteres" 
-            }
-        },
-        additionalProperties: false
     }
 };

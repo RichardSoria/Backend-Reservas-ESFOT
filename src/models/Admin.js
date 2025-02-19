@@ -32,9 +32,15 @@ const adminSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'La contraseña es requerida'],
-        minlength: [8, 'La contraseña debe tener al menos 8 caracteres'],
-        match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, 'Debe tener al menos una minúscula, una mayúscula y un número']
+        required: [true, "La contraseña es requerida"],
+        minlength: [8, "La contraseña debe tener al menos 8 caracteres"],
+        validate: {
+            validator: function (value) {
+                // Solo validar si la contraseña NO está encriptada
+                return value.startsWith("$2b$") || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(value);
+            },
+            message: "Debe tener al menos una minúscula, una mayúscula, un número y un carácter especial"
+        }
     },
     phone: {
         type: String,
@@ -113,7 +119,7 @@ adminSchema.methods.unlockAccount = async function () {
 adminSchema.methods.createResetToken = async function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
     this.resetToken = resetToken;
-    this.resetTokenExpire = Date.now() + 3600000;
+    this.resetTokenExpire = Date.now();
     await this.save();
     return resetToken;
 };

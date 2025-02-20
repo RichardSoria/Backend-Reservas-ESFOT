@@ -96,14 +96,9 @@ adminSchema.methods.updateLastLogin = async function () {
 adminSchema.methods.failedLoginAttempt = async function () {
     this.loginAttempts += 1;
     if (this.loginAttempts >= 5) {
-        this.lockUntil = new Date(Date.now() + 30 * 60 * 1000);
+        this.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // Bloqueo por 30 minutos
     }
     await this.save();
-};
-
-// Método para verificar si el usuario está bloqueado
-adminSchema.methods.isLocked = function () {
-    return this.lockUntil && this.lockUntil > Date.now();
 };
 
 // Método para desbloquear automáticamente después del tiempo de bloqueo

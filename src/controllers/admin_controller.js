@@ -46,11 +46,17 @@ const login = async (req, reply) => {
 
         // Validar si la contraseña es correcta
         if (!verifyPassword) {
+            await adminBDD.failedLoginAttempt();
             return reply.code(400).send({ message: 'La contraseña es incorrecta' });
         }
 
+        // Validar si el usuario está bloqueado
+        if (adminBDD.lockUntil && adminBDD.lockUntil > new Date()) {
+            return reply.code(401).send({ message: `El usuario está bloqueado. Intente nuevamente en ${moment(adminBDD.lockUntil).tz("America/Guayaquil").format("HH:mm:ss")}` });
+        }
+
         // Generar token JWT
-        const tokenJWT = generateToken(adminBDD._id, "administrador", reply.server);
+        const tokenJWT = generateToken(adminBDD._id, "administrador", req.server);
 
         // Actualizar último inicio de sesión
         await adminBDD.updateLastLogin();

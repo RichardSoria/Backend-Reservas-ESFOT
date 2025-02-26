@@ -51,6 +51,14 @@ const adminSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    updatedDate: {
+        type: Date,
+        default: null
+    },
+    deletedDate: {
+        type: Date,
+        default: null
+    },
     lastLogin: {
         type: Date,
         default: null
@@ -108,6 +116,12 @@ adminSchema.methods.unlockAccount = async function () {
         this.lockUntil = null;
         await this.save();
     }
+};
+
+// Método para resetear intentos fallidos de inicio de sesión
+adminSchema.methods.resetLoginAttempts = async function () {
+    this.loginAttempts = 0;
+    await this.save();
 };
 
 // Método para generar un token de recuperación seguro

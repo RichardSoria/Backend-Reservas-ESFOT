@@ -45,8 +45,6 @@ const loginAdmin = async (req, reply) => {
         // Validar la contraseña
         const verifyPassword = await adminBDD.matchPassword(password);
 
-        const loginAttempts = await adminBDD.loginAttempts
-
         // Validar si la contraseña es correcta
         if (!verifyPassword) {
             await adminBDD.failedLoginAttempt();
@@ -92,7 +90,7 @@ const registerAdmin = async (req, reply) => {
         const { cedula, name, lastName, email, phone } = req.body;
 
         // Verificar si los campos están vacíos o contienen solo espacios
-        if (!cedula?.trim() || !name?.trim() || !lastName?.trim() || !email?.trim() || !password?.trim() || !phone?.trim()) {
+        if (!cedula?.trim() || !name?.trim() || !lastName?.trim() || !email?.trim() || !phone?.trim()) {
             return reply.code(400).send({ message: "Todos los campos son obligatorios" });
         }
 
@@ -118,15 +116,16 @@ const registerAdmin = async (req, reply) => {
         const password = Math.random().toString(36).substring(2);
 
         // Crear un nuevo administrador
-        const newAdmin = new Admin({ cedula, name, lastName, email, password, phone });
+        const newAdmin = new Admin({ cedula, name, lastName, email, phone });
 
         // Encriptar la contraseña
-        newAdmin.password = await newAdmin.encryptPassword("Admin"+"@"+password+"-"+"1990");
+        newAdmin.password = await newAdmin.encryptPassword("Admin@"+password+"-1990");
 
         // Guardar en la base de datos
         await newAdmin.save();
 
         // Enviar respuesta exitosa
+        console.log("Admin@"+password+"-1990");
         return reply.code(201).send({ message: "Administrador registrado con éxito" });
 
     } catch (error) {

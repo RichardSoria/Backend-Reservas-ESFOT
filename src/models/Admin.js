@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { type } from "os";
 
 // Esquema del administrador
 const adminSchema = new mongoose.Schema({
@@ -46,6 +47,11 @@ const adminSchema = new mongoose.Schema({
         type: String,
         required: [true, 'El teléfono es requerido'],
         match: [/^\d{10}$/, 'El teléfono debe tener 10 dígitos']
+    },
+    rol: {
+        type: String,
+        default: "administrador",
+        required: [true, 'El rol es requerido']
     },
     status: {
         type: Boolean,

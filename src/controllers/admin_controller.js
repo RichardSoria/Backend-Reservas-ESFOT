@@ -2,6 +2,7 @@ import Admin from "../models/Admin.js";
 import generateToken from "../helpers/jwt.js";
 import moment from "moment-timezone";
 import mongoose from "mongoose";
+import { sendMailNewAdmin } from "../config/nodemailer.js";
 
 
 // Método para el inicio de sesión
@@ -14,7 +15,7 @@ const loginAdmin = async (req, reply) => {
             return reply.code(400).send({ message: "Todos los campos son obligatorios" });
         }
 
-        // 📌 Verificar si el usuario es el SuperAdmin
+        // Verificar si el usuario es el SuperAdmin
         if (email === req.server.config.SUPER_ADMIN) {
             if (password !== req.server.config.SUPER_ADMIN_PASSWORD) {
                 return reply.code(400).send({ message: "La contraseña es incorrecta" });
@@ -71,7 +72,7 @@ const loginAdmin = async (req, reply) => {
         }
 
         // Generar token JWT
-        const tokenJWT = generateToken(adminBDD._id, "administrador", req.server);
+        const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, req.server);
 
         // Enviar respuesta
         return reply.status(200).send({
@@ -121,11 +122,12 @@ const registerAdmin = async (req, reply) => {
         // Encriptar la contraseña
         newAdmin.password = await newAdmin.encryptPassword("Admin@"+password+"-1990");
 
+        // Enviar correo al nuevo administrador
+        sendMailNewAdmin(email, password, name, lastName);
+
         // Guardar en la base de datos
         await newAdmin.save();
 
-        // Enviar respuesta exitosa
-        console.log("Admin@"+password+"-1990");
         return reply.code(201).send({ message: "Administrador registrado con éxito" });
 
     } catch (error) {
@@ -144,13 +146,20 @@ const registerAdmin = async (req, reply) => {
 // Método para actualizar administrador
 const updateAdmin = async (req, reply) => {
     const { id } = req.params;
+
+    // Validar si el ID es válido
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return reply.code(400).send({ message: "El ID no es válido" });
     }
+
     const adminBDD = await Admin.findById(id);
+
+    // Validar si el administrador existe
     if (!adminBDD) {
         return reply.code(404).send({ message: "El administrador no existe" });
     }
+
+    // Validar si el correo, teléfono o cédula ya están registrados
     if (adminBDD.email != req.body.email) {
         const existingEmail = await Admin.findOne({ email: req.body.email });
         if (existingEmail) {
@@ -158,6 +167,7 @@ const updateAdmin = async (req, reply) => {
         }
     }
 
+    // Validar si el teléfono ya está registrado
     if (adminBDD.phone != req.body.phone) {
         const existingPhone = await Admin.findOne({ phone: req.body.phone });
         if (existingPhone) {
@@ -165,6 +175,7 @@ const updateAdmin = async (req, reply) => {
         }
     }
 
+    // Validar si la cédula ya está registrada
     if (adminBDD.cedula != req.body.cedula) {
         const existingCedula = await Admin.findOne({ cedula: req.body.cedula });
         if (existingCedula) {
@@ -172,13 +183,16 @@ const updateAdmin = async (req, reply) => {
         }
     }
 
+    // Crear contraseña aleatoria
     const password = Math.random().toString(36).substring(2);
 
+
+    // Actualizar los campos del administrador
     adminBDD.name = req.body.name || adminBDD?.name;
     adminBDD.lastName = req.body.lastName || adminBDD?.lastName;
     adminBDD.email = req.body.email || adminBDD?.email;
     adminBDD.phone = req.body.phone || adminBDD?.phone;
-    adminBDD.password = await adminBDD.encryptPassword("Admin"+"@"+password+"-"+"1990");
+    adminBDD.password = await adminBDD.encryptPassword("Admin"+"@"+password+"-"+"1990") || adminBDD?.password;
     adminBDD.updatedDate = new Date();
     await adminBDD.save();
     return reply.code(200).send({ message: "Administrador actualizado con éxito" });

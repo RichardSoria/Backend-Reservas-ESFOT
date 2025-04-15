@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
-import { envSchema } from './config/envSchema.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Crea un transportador de correo
 const transporter = nodemailer.createTransport({
@@ -12,4 +13,30 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Enviar correo electrónico	
+// Enviar correo al nuevo administrador
+const sendMailNewAdmin = async (email, password, name, lastName) => {
+    try {
+        const mailOptions = {
+            from: process.env.USER_MAILTRAP,
+            to: email,
+            subject: 'Bienvenido a la plataforma',
+            html: `
+            <p>Hola <strong>${name} ${lastName}</strong>,</p>
+            <p>Tu cuenta ha sido creada con éxito.</p>
+            <p><strong>Credenciales de acceso:</strong></p>
+            <ul>
+                <li><strong>Correo:</strong> ${email}</li>
+                <li><strong>Contraseña:</strong> Admin@${password}-1990</li>
+            </ul>
+            <p>Saludos,<br/>Equipo de soporte.</p>
+        `
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+}
+
+export { sendMailNewAdmin };

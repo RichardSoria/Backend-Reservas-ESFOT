@@ -173,6 +173,11 @@ const updateAdmin = async (req, reply) => {
             return reply.code(404).send({ message: "El administrador no existe" });
         }
 
+        // Validar si los campos están vacíos o contienen solo espacios
+        if (!req.body.name?.trim() || !req.body.lastName?.trim() || !req.body.email?.trim() || !req.body.phone?.trim()) {
+            return reply.code(400).send({ message: "Todos los campos son obligatorios" });
+        }
+
         // Validar si el correo, teléfono o cédula ya están registrados
         if (adminBDD.email != req.body.email) {
             const existingEmail = await Admin.findOne({ email: req.body.email });
@@ -223,9 +228,11 @@ const enableAdmin = async (req, reply) => {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
         const adminBDD = await Admin.findById(id);
+        // Verificar si el administrador existe
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
         }
+        // Verificar si el administrador ya está habilitado
         if (adminBDD.status) {
             return reply.code(400).send({ message: "El administrador ya está habilitado" });
         }
@@ -390,7 +397,63 @@ const updatePassword = async (req, reply) => {
     }
 };
 
+// Método para obtener todos los administradores	
+const getAllAdmins = async (req, reply) => {
+    try {
+        const admins = await Admin.find().select('-__v -updatedAt');
+        return reply.code(200).send(admins);
+    } catch (error) {
+        console.error("Error al obtener administradores:", error);
+        return reply.code(500).send({ message: "Error al obtener administradores" });
+    }
+};
+
+// Método para obtener un administrador por ID
+const getAdminById = async (req, reply) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: "El ID no es válido" });
+        }
+        const adminBDD = await Admin.findById(id).select('-__v -updatedAt -password');
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El administrador no existe" });
+        }
+        return reply.code(200).send(adminBDD);
+    } catch (error) {
+        console.error("Error al obtener administrador:", error);
+        return reply.code(500).send({ message: "Error al obtener administrador" });
+    }
+};
+
+// Método para mostrar el perfil del administrador
+const getAdminProfile = async (req, reply) => {
+    try {
+        const { id } = req.adminBDD;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: "El ID no es válido" });
+        }
+        const adminBDD = await Admin.findById(id).select('-__v -updatedAt -password');
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El administrador no existe" });
+        }
+        return reply.code(200).send({
+            id: adminBDD._id,
+            name: adminBDD.name,
+            lastName: adminBDD.lastName,
+            email: adminBDD.email,
+            phone: adminBDD.phone,
+            rol: adminBDD.rol,
+            status: adminBDD.status,
+            lastLoginLocal: moment(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss"),
+        });
+    } catch (error) {
+        console.error("Error al obtener perfil de administrador:", error);
+        return reply.code(500).send({ message: "Error al obtener perfil de administrador" });
+    }
+};
 
 
 
-export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin, recoverPassword, verifyToken, sendRecoverPassword, updatePassword };
+
+export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin, recoverPassword, verifyToken, sendRecoverPassword, updatePassword, getAllAdmins, getAdminById, getAdminProfile };

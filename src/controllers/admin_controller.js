@@ -2,7 +2,7 @@ import Admin from "../models/Admin.js";
 import generateToken from "../helpers/jwt.js";
 import moment from "moment-timezone";
 import mongoose from "mongoose";
-import { sendMailNewAdmin } from "../config/nodemailer.js";
+import { sendMailNewAdmin, sendMailRecoverPassword, sendMailNewPassword } from "../config/nodemailer.js";
 
 
 // Método para el inicio de sesión
@@ -74,7 +74,7 @@ const loginAdmin = async (req, reply) => {
         }
 
         // Si la contraseña es correcta
-        if (verifyPassword) {
+        if (verifyPassword && adminBDD.status) {
             await adminBDD.resetLoginAttempts();
             await adminBDD.updateLastLogin();
 
@@ -88,6 +88,8 @@ const loginAdmin = async (req, reply) => {
                 tokenJWT,
                 lastLoginLocal
             });
+        } else {
+            return reply.code(400).send({ message: 'La cuenta está deshabilitada' });
         }
 
 
@@ -156,94 +158,208 @@ const registerAdmin = async (req, reply) => {
 
 // Método para actualizar administrador
 const updateAdmin = async (req, reply) => {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    // Validar si el ID es válido
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return reply.code(400).send({ message: "El ID no es válido" });
-    }
-
-    const adminBDD = await Admin.findById(id);
-
-    // Validar si el administrador existe
-    if (!adminBDD) {
-        return reply.code(404).send({ message: "El administrador no existe" });
-    }
-
-    // Validar si el correo, teléfono o cédula ya están registrados
-    if (adminBDD.email != req.body.email) {
-        const existingEmail = await Admin.findOne({ email: req.body.email });
-        if (existingEmail) {
-            return reply.code(400).send({ message: "El correo ya está registrado" });
+        // Validar si el ID es válido
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: "El ID no es válido" });
         }
-    }
 
-    // Validar si el teléfono ya está registrado
-    if (adminBDD.phone != req.body.phone) {
-        const existingPhone = await Admin.findOne({ phone: req.body.phone });
-        if (existingPhone) {
-            return reply.code(400).send({ message: "El teléfono ya está registrado" });
+        const adminBDD = await Admin.findById(id);
+
+        // Validar si el administrador existe
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El administrador no existe" });
         }
-    }
 
-    // Validar si la cédula ya está registrada
-    if (adminBDD.cedula != req.body.cedula) {
-        const existingCedula = await Admin.findOne({ cedula: req.body.cedula });
-        if (existingCedula) {
-            return reply.code(400).send({ message: "La cédula ya está registrada" });
+        // Validar si el correo, teléfono o cédula ya están registrados
+        if (adminBDD.email != req.body.email) {
+            const existingEmail = await Admin.findOne({ email: req.body.email });
+            if (existingEmail) {
+                return reply.code(400).send({ message: "El correo ya está registrado" });
+            }
         }
+
+        // Validar si el teléfono ya está registrado
+        if (adminBDD.phone != req.body.phone) {
+            const existingPhone = await Admin.findOne({ phone: req.body.phone });
+            if (existingPhone) {
+                return reply.code(400).send({ message: "El teléfono ya está registrado" });
+            }
+        }
+
+        // Validar si la cédula ya está registrada
+        if (adminBDD.cedula != req.body.cedula) {
+            const existingCedula = await Admin.findOne({ cedula: req.body.cedula });
+            if (existingCedula) {
+                return reply.code(400).send({ message: "La cédula ya está registrada" });
+            }
+        }
+
+        // Crear contraseña aleatoria
+        const password = Math.random().toString(36).substring(2);
+
+        // Actualizar los campos del administrador
+        adminBDD.name = req.body.name || adminBDD?.name;
+        adminBDD.lastName = req.body.lastName || adminBDD?.lastName;
+        adminBDD.email = req.body.email || adminBDD?.email;
+        adminBDD.phone = req.body.phone || adminBDD?.phone;
+        adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + password + "-" + "1990") || adminBDD?.password;
+        adminBDD.updatedDate = new Date();
+        await adminBDD.save();
+        return reply.code(200).send({ message: "Administrador actualizado con éxito" });
+    } catch (error) {
+        console.error("Error al actualizar administrador:", error);
+        return reply.code(500).send({ message: "Error al actualizar administrador" });
     }
-
-    // Crear contraseña aleatoria
-    const password = Math.random().toString(36).substring(2);
-
-
-    // Actualizar los campos del administrador
-    adminBDD.name = req.body.name || adminBDD?.name;
-    adminBDD.lastName = req.body.lastName || adminBDD?.lastName;
-    adminBDD.email = req.body.email || adminBDD?.email;
-    adminBDD.phone = req.body.phone || adminBDD?.phone;
-    adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + password + "-" + "1990") || adminBDD?.password;
-    adminBDD.updatedDate = new Date();
-    await adminBDD.save();
-    return reply.code(200).send({ message: "Administrador actualizado con éxito" });
 };
 
 // Método para habilitar administrador
 const enableAdmin = async (req, reply) => {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return reply.code(400).send({ message: "El ID no es válido" });
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: "El ID no es válido" });
+        }
+        const adminBDD = await Admin.findById(id);
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El administrador no existe" });
+        }
+        if (adminBDD.status) {
+            return reply.code(400).send({ message: "El administrador ya está habilitado" });
+        }
+        adminBDD.status = true;
+        await adminBDD.save();
+        return reply.code(200).send({ message: "Administrador habilitado con éxito" });
+
+    } catch (error) {
+        console.error("Error al habilitar administrador:", error);
+        return reply.code(500).send({ message: "Error al habilitar administrador" });
+
     }
-    const adminBDD = await Admin.findById(id);
-    if (!adminBDD) {
-        return reply.code(404).send({ message: "El administrador no existe" });
-    }
-    if (adminBDD.status) {
-        return reply.code(400).send({ message: "El administrador ya está habilitado" });
-    }
-    adminBDD.status = true;
-    await adminBDD.save();
-    return reply.code(200).send({ message: "Administrador habilitado con éxito" });
 };
 
 // Método para deshabilitar administrador
 const disableAdmin = async (req, reply) => {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return reply.code(400).send({ message: "El ID no es válido" });
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: "El ID no es válido" });
+        }
+        const adminBDD = await Admin.findById(id);
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El administrador no existe" });
+        }
+        if (!adminBDD.status) {
+            return reply.code(400).send({ message: "El administrador ya está deshabilitado" });
+        }
+        adminBDD.status = false;
+        adminBDD.disableDate = new Date();
+        await adminBDD.save();
+        return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
+    } catch (error) {
+        console.error("Error al deshabilitar administrador:", error);
+        return reply.code(500).send({ message: "Error al deshabilitar administrador" });
+
     }
-    const adminBDD = await Admin.findById(id);
-    if (!adminBDD) {
-        return reply.code(404).send({ message: "El administrador no existe" });
-    }
-    if (!adminBDD.status) {
-        return reply.code(400).send({ message: "El administrador ya está deshabilitado" });
-    }
-    adminBDD.status = false;
-    adminBDD.disableDate = new Date();
-    await adminBDD.save();
-    return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
 };
 
-export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin };
+// Método para recuperar contraseña
+const recoverPassword = async (req, reply) => {
+    try {
+        const { email } = req.body;
+        if (!email?.trim()) {
+            return reply.code(400).send({ message: "El correo es obligatorio" });
+        }
+        const adminBDD = await Admin.findOne({ email });
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El correo no está registrado" });
+        }
+        // Verificar si el administrador está habilitado
+        if (!adminBDD.status) {
+            return reply.code(400).send({ message: "El administrador está deshabilitado" });
+        }
+        // Verificar si el administrador tiene un token de restablecimiento
+        if (adminBDD.resetToken && adminBDD.resetTokenExpire > new Date()) {
+            return reply.code(400).send({ message: "Ya se ha enviado un correo de recuperación" });
+        }
+
+        // Verificar si el administrador tiene un token de restablecimiento expirado
+        if (adminBDD.resetTokenExpire && adminBDD.resetTokenExpire < new Date()) {
+            const token = await adminBDD.createResetToken();
+            // Enviar correo de recuperación
+            sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName);
+            return reply.code(200).send({ message: "Correo de recuperación enviado" });
+        }
+        // Crear un token de restablecimiento
+        const token = await adminBDD.createResetToken();
+
+        // Enviar correo de recuperación
+        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName);
+
+        return reply.code(200).send({ message: "Correo de recuperación enviado" });
+    } catch (error) {
+        console.error("Error al recuperar contraseña:", error);
+        return reply.code(500).send({ message: "Error al recuperar contraseña" });
+    }
+};
+
+// Método para verificar token
+const verifyToken = async (req, reply) => {
+    try {
+        const { token } = req.params;
+        if (!token) {
+            return reply.code(400).send({ message: "El token es obligatorio" });
+        }
+        const adminBDD = await Admin.findOne({ resetToken: token });
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El token no es válido" });
+        }
+        // Verificar si el token ha expirado
+        if (adminBDD.resetTokenExpire < new Date()) {
+            return reply.code(400).send({ message: "El token ha expirado" });
+        }
+        return reply.code(200).send({ message: "Token válido" });
+    } catch (error) {
+        console.error("Error al verificar token:", error);
+        return reply.code(500).send({ message: "Error al verificar token" });
+    }
+};
+
+// Método para enviar la contraseña de recuperación
+const sendRecoverPassword = async (req, reply) => {
+    try {
+        const { token } = req.params;
+
+        const adminBDD = await Admin.findOne({ resetToken: token });
+        if (!adminBDD) {
+            return reply.code(400).send({ message: "El token no es válido" });
+        }
+        // Verificar si el token ha expirado
+        if (adminBDD.resetTokenExpire < new Date()) {
+            return reply.code(400).send({ message: "El token ha expirado" });
+        }
+        // Generar nueva contraseña
+        const newPassword = Math.random().toString(36).substring(2);
+        // Encriptar la nueva contraseña
+        adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + newPassword + "-" + "1990");
+        // Limpiar el token y la fecha de expiración
+        adminBDD.resetToken = null;
+        adminBDD.resetTokenExpire = null;
+        // Guardar en la base de datos
+        await adminBDD.save();
+        // Enviar correo con la nueva contraseña
+        sendMailNewPassword(adminBDD.email, newPassword, adminBDD.name, adminBDD.lastName);
+        return reply.code(200).send({ message: "Contraseña de recuperación enviada" });
+
+    } catch (error) {
+        console.error("Error al enviar la contraseña de recuperación:", error);
+        return reply.code(500).send({ message: "Error al enviar la contraseña de recuperación" });
+
+    }
+};
+
+
+
+export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin, recoverPassword, verifyToken, sendRecoverPassword };

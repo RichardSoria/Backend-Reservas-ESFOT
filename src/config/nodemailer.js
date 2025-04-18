@@ -39,4 +39,47 @@ const sendMailNewAdmin = async (email, password, name, lastName) => {
     }
 }
 
-export { sendMailNewAdmin };
+const sendMailRecoverPassword = async (email, token, name, lastName) => {
+    try {
+        const mailOptions = {
+            from: process.env.USER_MAILTRAP,
+            to: email,
+            subject: 'Recuperación de contraseña',
+            html: `
+            <p>Hola <strong>${name} ${lastName}</strong>,</p>
+            <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
+            <a href="http://localhost:3000/api/recover-password/${token}">Restablecer contraseña</a>
+            <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
+            <p>Saludos,<br/>Equipo de soporte.</p>
+        `
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+}
+
+const sendMailNewPassword = async (email, password, name, lastName) => {
+    try {
+        const mailOptions = {
+            from: process.env.USER_MAILTRAP,
+            to: email,
+            subject: 'Nueva contraseña',
+            html: `
+            <p>Hola <strong>${name} ${lastName}</strong>,</p>
+            <p>Tu contraseña ha sido restablecida con éxito.</p>
+            <p><strong>Tu nueva contraseña es:</strong> Admin@${password}-1990</p>
+            <p>Saludos,<br/>Equipo de soporte.</p>
+        `
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+}
+
+export { sendMailNewAdmin, sendMailRecoverPassword, sendMailNewPassword };

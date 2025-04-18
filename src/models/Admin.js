@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { type } from "os";
+import moment from "moment-timezone";
 
 // Esquema del administrador
 const adminSchema = new mongoose.Schema({
@@ -118,7 +119,7 @@ adminSchema.methods.resetLoginAttempts = async function () {
 adminSchema.methods.createResetToken = async function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
     this.resetToken = resetToken;
-    this.resetTokenExpire = Date.now();
+    this.resetTokenExpire = moment().add(10, 'minute').toDate(); // Expira en 10 minutos
     await this.save();
     return resetToken;
 };

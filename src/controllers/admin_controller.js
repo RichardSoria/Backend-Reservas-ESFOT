@@ -356,10 +356,41 @@ const sendRecoverPassword = async (req, reply) => {
     } catch (error) {
         console.error("Error al enviar la contraseña de recuperación:", error);
         return reply.code(500).send({ message: "Error al enviar la contraseña de recuperación" });
+    }
+};
 
+// Método para actualizar contraseña
+const updatePassword = async (req, reply) => {
+    try {
+        const { id } = req.params;
+        const { password, confirmPassword } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: "El ID no es válido" });
+        }
+        const adminBDD = await Admin.findById(id);
+        if (!adminBDD) {
+            return reply.code(404).send({ message: "El administrador no existe" });
+        }
+        // Comprobar si los campos están vacíos o contienen solo espacios
+        if (!password?.trim() || !confirmPassword?.trim()) {
+            return reply.code(400).send({ message: "Todos los campos son obligatorios" });
+        }
+        // Validar si la contraseña y la confirmación son iguales
+        if (password !== confirmPassword) {
+            return reply.code(400).send({ message: "Las contraseñas no coinciden" });
+        }
+        // Encriptar la nueva contraseña
+        adminBDD.password = await adminBDD.encryptPassword(password);
+        // Guardar en la base de datos
+        await adminBDD.save();
+        return reply.code(200).send({ message: "Contraseña actualizada con éxito" });
+    } catch (error) {
+        console.error("Error al actualizar contraseña:", error);
+        return reply.code(500).send({ message: "Error al actualizar contraseña" });
     }
 };
 
 
 
-export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin, recoverPassword, verifyToken, sendRecoverPassword };
+
+export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin, recoverPassword, verifyToken, sendRecoverPassword, updatePassword };

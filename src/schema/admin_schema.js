@@ -79,3 +79,30 @@ export const registerAdminSchema = {
         }
     }
 };
+
+export const updatePasswordSchema = {
+    body: {
+        type: 'object',
+        required: ['password', 'confirmPassword'],
+        properties: {
+            password: {
+                type: 'string',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
+            },
+            confirmPassword: {
+                type: 'string',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
+            }
+        }
+    }
+};

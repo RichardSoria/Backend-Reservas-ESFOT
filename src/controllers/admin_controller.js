@@ -40,45 +40,56 @@ const loginAdmin = async (req, reply) => {
 
         // Validar si el usuario existe
         if (!adminBDD) {
-            return reply.code(404).send({ message: 'El usuario no existe' });
+            return reply.code(404).send({ message: 'Credenciales Incorrectas' });
+        }
+
+        // Si el usuario está bloqueado y ya pasó el tiempo, desbloquear
+        if (adminBDD.lockUntil && adminBDD.lockUntil < new Date()) {
+            adminBDD.loginAttempts = 0;
+            adminBDD.lockUntil = null;
+            await adminBDD.save();
         }
 
         // Validar la contraseña
         const verifyPassword = await adminBDD.matchPassword(password);
 
-        // Validar si la contraseña es correcta
+        // Si la cuenta sigue bloqueada
+        if (adminBDD.lockUntil && adminBDD.lockUntil > new Date()) {
+            return reply.code(401).send({
+                message: `El usuario está bloqueado. Intente nuevamente en ${moment(adminBDD.lockUntil).tz("America/Guayaquil").format("HH:mm:ss")}`
+            });
+        }
+
+        // Si la contraseña es incorrecta
         if (!verifyPassword) {
-            await adminBDD.failedLoginAttempt();
-            return reply.code(400).send({ message: 'La contraseña es incorrecta' });
+            adminBDD.loginAttempts += 1;
+
+            // Si llegó al límite, bloquear
+            if (adminBDD.loginAttempts >= 5) {
+                adminBDD.lockUntil = moment().add(30, 'minutes').toDate();
+            }
+
+            await adminBDD.save();
+            return reply.code(400).send({ message: 'Credenciales Incorrectas' });
         }
 
-        // Desbloquear usuario
-        await adminBDD.unlockAccount();
+        // Si la contraseña es correcta
+        if (verifyPassword) {
+            await adminBDD.resetLoginAttempts();
+            await adminBDD.updateLastLogin();
 
-        // Resetear intentos de inicio de sesión
-        await adminBDD.resetLoginAttempts();
+            const lastLoginLocal = adminBDD.lastLogin
+                ? moment.utc(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
+                : null;
 
-        // Actualizar último inicio de sesión
-        await adminBDD.updateLastLogin();
+            const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, req.server);
 
-        // Convertir `lastLogin` a hora local (Ecuador UTC-5) antes de enviarlo
-        const lastLoginLocal = adminBDD.lastLogin
-            ? moment.utc(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
-            : null;
-
-        // Validar si el usuario está bloqueado
-        if (adminBDD.lockUntil > new Date()) {
-            return reply.code(401).send({ message: `El usuario está bloqueado. Intente nuevamente en ${moment(adminBDD.lockUntil).tz("America/Guayaquil").format("HH:mm:ss")}` });
+            return reply.status(200).send({
+                tokenJWT,
+                lastLoginLocal
+            });
         }
 
-        // Generar token JWT
-        const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, req.server);
-
-        // Enviar respuesta
-        return reply.status(200).send({
-            tokenJWT,
-            lastLoginLocal
-        });
 
     } catch (error) {
         console.error("Error al iniciar sesión:", error);
@@ -120,7 +131,7 @@ const registerAdmin = async (req, reply) => {
         const newAdmin = new Admin({ cedula, name, lastName, email, phone });
 
         // Encriptar la contraseña
-        newAdmin.password = await newAdmin.encryptPassword("Admin@"+password+"-1990");
+        newAdmin.password = await newAdmin.encryptPassword("Admin@" + password + "-1990");
 
         // Enviar correo al nuevo administrador
         sendMailNewAdmin(email, password, name, lastName);
@@ -192,7 +203,7 @@ const updateAdmin = async (req, reply) => {
     adminBDD.lastName = req.body.lastName || adminBDD?.lastName;
     adminBDD.email = req.body.email || adminBDD?.email;
     adminBDD.phone = req.body.phone || adminBDD?.phone;
-    adminBDD.password = await adminBDD.encryptPassword("Admin"+"@"+password+"-"+"1990") || adminBDD?.password;
+    adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + password + "-" + "1990") || adminBDD?.password;
     adminBDD.updatedDate = new Date();
     await adminBDD.save();
     return reply.code(200).send({ message: "Administrador actualizado con éxito" });
@@ -230,6 +241,7 @@ const disableAdmin = async (req, reply) => {
         return reply.code(400).send({ message: "El administrador ya está deshabilitado" });
     }
     adminBDD.status = false;
+    adminBDD.disableDate = new Date();
     await adminBDD.save();
     return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
 };

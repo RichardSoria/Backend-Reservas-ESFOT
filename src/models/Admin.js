@@ -61,7 +61,7 @@ const adminSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    deletedDate: {
+    disableDate: {
         type: Date,
         default: null
     },
@@ -106,29 +106,13 @@ adminSchema.methods.updateLastLogin = async function () {
     await this.save();
 };
 
-// Método para manejar intentos fallidos de inicio de sesión
-adminSchema.methods.failedLoginAttempt = async function () {
-    this.loginAttempts += 1;
-    if (this.loginAttempts >= 5) {
-        this.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // Bloqueo por 30 minutos
-    }
-    await this.save();
-};
-
-// Método para desbloquear automáticamente después del tiempo de bloqueo
-adminSchema.methods.unlockAccount = async function () {
-    if (this.lockUntil && this.lockUntil < Date.now()) {
-        this.loginAttempts = 0;
-        this.lockUntil = null;
-        await this.save();
-    }
-};
-
-// Método para resetear intentos fallidos de inicio de sesión
+// Método para reiniciar los intentos de inicio de sesión
 adminSchema.methods.resetLoginAttempts = async function () {
     this.loginAttempts = 0;
+    this.lockUntil = null;
     await this.save();
 };
+
 
 // Método para generar un token de recuperación seguro
 adminSchema.methods.createResetToken = async function () {

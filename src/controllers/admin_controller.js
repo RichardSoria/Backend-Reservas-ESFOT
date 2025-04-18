@@ -429,14 +429,13 @@ const getAdminById = async (req, reply) => {
 // Método para mostrar el perfil del administrador
 const getAdminProfile = async (req, reply) => {
     try {
-        const { id } = req.adminBDD;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return reply.code(400).send({ message: "El ID no es válido" });
-        }
-        const adminBDD = await Admin.findById(id).select('-__v -updatedAt -password');
+        const adminBDD = req.adminBDD;
+
+        // Verificar si el administrador existe
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
         }
+
         return reply.code(200).send({
             id: adminBDD._id,
             name: adminBDD.name,

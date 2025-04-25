@@ -10,15 +10,10 @@ const loginAdmin = async (req, reply) => {
     try {
         const { email, password } = req.body;
 
-        // Validar si los campos existen y no están vacíos
-        if (!email?.trim() || !password?.trim()) {
-            return reply.code(400).send({ message: "Todos los campos son obligatorios" });
-        }
-
         // Verificar si el usuario es el SuperAdmin
         if (email === req.server.config.SUPER_ADMIN) {
             if (password !== req.server.config.SUPER_ADMIN_PASSWORD) {
-                return reply.code(400).send({ message: "La contraseña es incorrecta" });
+                return reply.code(400).send({ message: "Credenciales Incorrectas" });
             }
 
             // Generar token para el SuperAdmin
@@ -103,15 +98,17 @@ const registerAdmin = async (req, reply) => {
     try {
         const { cedula, name, lastName, email, phone } = req.body;
 
-        // Verificar si los campos están vacíos o contienen solo espacios
-        if (!cedula?.trim() || !name?.trim() || !lastName?.trim() || !email?.trim() || !phone?.trim()) {
-            return reply.code(400).send({ message: "Todos los campos son obligatorios" });
-        }
-
         // Verificar si la cédula ya está registrada
         const existingCedula = await Admin.findOne({ cedula });
         if (existingCedula) {
             return reply.code(400).send({ message: "La cédula ya está registrada" });
+        }
+
+        // Validar si la cédula es ecuatoriana
+        const isValidDNI = await Admin.verifyEcuadorianDNI(cedula);
+
+        if (!isValidDNI) {
+            return reply.code(400).send({ message: "La cédula no es válida" });
         }
 
         // Verificar si el correo ya está registrado
@@ -171,11 +168,6 @@ const updateAdmin = async (req, reply) => {
         // Validar si el administrador existe
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
-        }
-
-        // Validar si los campos están vacíos o contienen solo espacios
-        if (!req.body.name?.trim() || !req.body.lastName?.trim() || !req.body.email?.trim() || !req.body.phone?.trim()) {
-            return reply.code(400).send({ message: "Todos los campos son obligatorios" });
         }
 
         // Validar si el correo, teléfono o cédula ya están registrados
@@ -354,6 +346,11 @@ const sendRecoverPassword = async (req, reply) => {
         // Limpiar el token y la fecha de expiración
         adminBDD.resetToken = null;
         adminBDD.resetTokenExpire = null;
+
+        // Limpiar los intentos de inicio de sesión
+        adminBDD.loginAttempts = 0;
+        adminBDD.lockUntil = null;
+
         // Guardar en la base de datos
         await adminBDD.save();
         // Enviar correo con la nueva contraseña

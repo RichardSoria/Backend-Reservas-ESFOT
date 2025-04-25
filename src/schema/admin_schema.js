@@ -69,11 +69,13 @@ export const registerAdminSchema = {
             },
             phone: {
                 type: 'string',
-                minLength: 1,
-                pattern: '^[0-9]{10}$',
+                minLength: 10,
+                maxLength: 10,
+                pattern: '09[89][0-9]{7}$',
                 errorMessage: {
-                    pattern: 'El teléfono debe tener exactamente 10 dígitos numéricos',
-                    minLength: 'El campo de teléfono es obligatorio'
+                    pattern: 'El número debe empezar con 098 o 099 y tener 10 dígitos',
+                    minLength: 'El campo de teléfono es obligatorio',
+                    maxLength: 'El teléfono debe tener exactamente 10 dígitos'
                 }
             }
         }

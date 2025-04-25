@@ -60,10 +60,30 @@ const adminSchema = new mongoose.Schema({
     },
     updatedDate: {
         type: Date,
-        default: null
+        default: Date.now
     },
     disableDate: {
         type: Date,
+        default: null
+    },
+    createFor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+        default: null
+    },
+    updateFor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+        default: null
+    },
+    enableFor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+        default: null
+    },
+    disableFor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
         default: null
     },
     lastLogin: {
@@ -89,6 +109,31 @@ const adminSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Método para validar si una cédula es ecuadoriana
+adminSchema.statics.verifyEcuadorianDNI = async function(cedula) {
+    if (!/^\d{10}$/.test(cedula)) return false;
+
+    const provincia = parseInt(cedula.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) return false;
+
+    const digitoVerificador = parseInt(cedula[9]);
+    let suma = 0;
+
+    for (let i = 0; i < 9; i++) {
+        let digito = parseInt(cedula[i]);
+        if (i % 2 === 0) {
+            digito *= 2;
+            if (digito > 9) digito -= 9;
+        }
+        suma += digito;
+    }
+
+    const decenaSuperior = Math.ceil(suma / 10) * 10;
+    const verificadorCalculado = decenaSuperior - suma === 10 ? 0 : decenaSuperior - suma;
+
+    return verificadorCalculado === digitoVerificador;
+};
 
 // Método para encriptar la contraseña antes de guardar
 adminSchema.methods.encryptPassword = async function (password) {

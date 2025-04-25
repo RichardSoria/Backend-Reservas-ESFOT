@@ -4,7 +4,7 @@ import verifyAuth from "../middlewares/authentication.js";
 
 export default async function adminRoutes(fastify) {
     fastify.post("/login", { schema: loginAdminSchema }, loginAdmin);
-    fastify.post("/register", { schema: registerAdminSchema }, registerAdmin);
+    fastify.post("/register", { preHandler: verifyAuth, schema: registerAdminSchema }, registerAdmin);
     fastify.put("/update/:id", { schema: registerAdmin }, updateAdmin);
     fastify.put("/enable/:id", enableAdmin);
     fastify.put("/disable/:id", disableAdmin);

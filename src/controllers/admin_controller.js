@@ -96,6 +96,9 @@ const loginAdmin = async (req, reply) => {
 
 const registerAdmin = async (req, reply) => {
     try {
+
+        const adminLogged = req.adminBDD;
+        
         const { cedula, name, lastName, email, phone } = req.body;
 
         // Verificar si la cédula ya está registrada
@@ -127,7 +130,7 @@ const registerAdmin = async (req, reply) => {
         const password = Math.random().toString(36).substring(2);
 
         // Crear un nuevo administrador
-        const newAdmin = new Admin({ cedula, name, lastName, email, phone });
+        const newAdmin = new Admin({ cedula, name, lastName, email, phone, createFor: adminLogged._id, enableFor: adminLogged._id });
 
         // Encriptar la contraseña
         newAdmin.password = await newAdmin.encryptPassword("Admin@" + password + "-1990");

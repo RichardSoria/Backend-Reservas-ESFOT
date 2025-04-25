@@ -58,9 +58,13 @@ const adminSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    updatedDate: {
+    createdDate: {
         type: Date,
         default: Date.now
+    },
+    updatedDate: {
+        type: Date,
+        default: null
     },
     disableDate: {
         type: Date,
@@ -106,8 +110,6 @@ const adminSchema = new mongoose.Schema({
         type: Date,
         default: null
     }
-}, {
-    timestamps: true
 });
 
 // Método para validar si una cédula es ecuadoriana

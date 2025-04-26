@@ -42,7 +42,7 @@ fastify.get('/', async (req, reply) => {
 });
 
 // Registrar rutas
-await fastify.register(adminRoutes, { prefix: "/api" });
+await fastify.register(adminRoutes, { prefix: "/api/admin" });
 
 // Exportar la instancia de Fastify
 export default fastify;

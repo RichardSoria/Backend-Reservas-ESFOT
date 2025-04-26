@@ -66,6 +66,10 @@ const adminSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    enabledDate: {
+        type: Date,
+        default: Date.now
+    },
     disableDate: {
         type: Date,
         default: null
@@ -108,6 +112,11 @@ const adminSchema = new mongoose.Schema({
     },
     resetTokenExpire: {
         type: Date,
+        default: null
+    }
+    ,
+    urlImage: {
+        type: String,
         default: null
     }
 });

@@ -108,3 +108,21 @@ export const updatePasswordSchema = {
         }
     }
 };
+
+export const recoverPasswordSchema = {
+    body: {
+        type: 'object',
+        required: ['email'],
+        properties: {
+            email: {
+                type: 'string',
+                minLength: 1,
+                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
+            }
+        }
+    }
+};

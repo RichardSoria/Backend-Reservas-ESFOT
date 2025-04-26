@@ -4,31 +4,10 @@ import moment from "moment-timezone";
 import mongoose from "mongoose";
 import { sendMailNewAdmin, sendMailRecoverPassword, sendMailNewPassword } from "../config/nodemailer.js";
 
-
 // Método para el inicio de sesión
 const loginAdmin = async (req, reply) => {
     try {
         const { email, password } = req.body;
-
-        // Verificar si el usuario es el SuperAdmin
-        if (email === req.server.config.SUPER_ADMIN) {
-            if (password !== req.server.config.SUPER_ADMIN_PASSWORD) {
-                return reply.code(400).send({ message: "Credenciales Incorrectas" });
-            }
-
-            // Generar token para el SuperAdmin
-            const tokenJWT = generateToken("superadmin", "superadmin", req.server);
-
-            // Enviar respuesta del SuperAdmin
-            return reply.status(200).send({
-                tokenJWT,
-                name: "Super",
-                lastName: "Admin",
-                email,
-                rol: "superadmin",
-                lastLoginLocal: moment().tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
-            });
-        }
 
         // Buscar el usuario en la base de datos
         const adminBDD = await Admin.findOne({ email }).select('-lastLogin -resetToken -resetTokenExpire -__v -updatedAt -createdAt');
@@ -270,10 +249,9 @@ const disableAdmin = async (req, reply) => {
 // Método para recuperar contraseña
 const recoverPassword = async (req, reply) => {
     try {
+
         const { email } = req.body;
-        if (!email?.trim()) {
-            return reply.code(400).send({ message: "El correo es obligatorio" });
-        }
+
         const adminBDD = await Admin.findOne({ email });
         if (!adminBDD) {
             return reply.code(404).send({ message: "El correo no está registrado" });

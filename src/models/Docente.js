@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import moment from "moment-timezone";
 
-// Esquema del administrador
-const adminSchema = new mongoose.Schema({
+// Esquema del docente
+const docenteSchema = new mongoose.Schema({
     cedula: {
         type: String,
         required: [true, 'La cédula es requerida'],
@@ -50,12 +50,34 @@ const adminSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        default: "administrador",
+        default: "docente",
         required: [true, 'El rol es requerido']
     },
     status: {
         type: Boolean,
         default: true
+    },
+    career: {
+        type: String,
+        required: [true, 'La carrera es requerida'],
+        enum: [
+            'Tecnología Superior en Agua y Saneamiento Ambiental', 
+            'Tecnología Superior en Desarrollo de Software', 
+            'Tecnología Superior en Electromecánica',
+            'Tecnología Superior en Redes y Telecomunicaciones', 
+            'Tecnología Superior en Procesamiento de Alimentos',
+            'Tecnología Superior en Procesamiento Industrial de la Madera',
+            'No pertenece a ninguna carrera dentro de la facultad'
+        ]
+    },
+    otherFaculty: {
+        type: String,
+        default: null,
+        maxlength: [50, 'La facultad no puede tener más de 50 caracteres']
+    },
+    numberReservation: {
+        type: Number,
+        default: 0,
     },
     createdDate: {
         type: Date,
@@ -116,7 +138,7 @@ const adminSchema = new mongoose.Schema({
 });
 
 // Método para validar si una cédula es ecuadoriana
-adminSchema.statics.verifyEcuadorianDNI = async function(cedula) {
+docenteSchema.statics.verifyEcuadorianDNI = async function(cedula) {
     if (!/^\d{10}$/.test(cedula)) return false;
 
     const provincia = parseInt(cedula.substring(0, 2), 10);
@@ -141,32 +163,31 @@ adminSchema.statics.verifyEcuadorianDNI = async function(cedula) {
 };
 
 // Método para encriptar la contraseña antes de guardar
-adminSchema.methods.encryptPassword = async function (password) {
+docenteSchema.methods.encryptPassword = async function (password) {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
 };
 
 // Método para comparar la contraseña ingresada con la almacenada
-adminSchema.methods.matchPassword = async function (password) {
+docenteSchema.methods.matchPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 
 // Método para actualizar el último inicio de sesión
-adminSchema.methods.updateLastLogin = async function () {
+docenteSchema.methods.updateLastLogin = async function () {
     this.lastLogin = new Date();
     await this.save();
 };
 
 // Método para reiniciar los intentos de inicio de sesión
-adminSchema.methods.resetLoginAttempts = async function () {
+docenteSchema.methods.resetLoginAttempts = async function () {
     this.loginAttempts = 0;
     this.lockUntil = null;
     await this.save();
 };
 
-
 // Método para generar un token de recuperación seguro
-adminSchema.methods.createResetToken = async function () {
+docenteSchema.methods.createResetToken = async function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
     this.resetToken = resetToken;
     this.resetTokenExpire = moment().add(10, 'minute').toDate(); // Expira en 10 minutos
@@ -175,4 +196,4 @@ adminSchema.methods.createResetToken = async function () {
 };
 
 // Crear el modelo de administrador
-export default mongoose.model('Admin', adminSchema);
+export default mongoose.model('Docente', docenteSchema);

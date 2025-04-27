@@ -2,7 +2,7 @@ import Admin from "../models/Admin.js";
 import generateToken from "../helpers/jwt.js";
 import moment from "moment-timezone";
 import mongoose from "mongoose";
-import { sendMailNewAdmin, sendMailRecoverPassword, sendMailNewPassword } from "../config/nodemailer.js";
+import { sendMailNewUser, sendMailRecoverPassword, sendMailNewPassword, sendMailUpdateUser, sendMailEnableUser, sendMailDisableUser } from "../config/nodemailer.js";
 
 // Método para el inicio de sesión
 const loginAdmin = async (req, reply) => {
@@ -112,10 +112,10 @@ const registerAdmin = async (req, reply) => {
         const newAdmin = new Admin({ cedula, name, lastName, email, phone, createFor: adminLogged._id, enableFor: adminLogged._id });
 
         // Encriptar la contraseña
-        newAdmin.password = await newAdmin.encryptPassword("Admin@" + password + "-1990");
+        newAdmin.password = await newAdmin.encryptPassword("Esfot@" + password + "-1990");
 
         // Enviar correo al nuevo administrador
-        sendMailNewAdmin(email, password, name, lastName);
+        sendMailNewUser(email, password, name, lastName);
 
         // Guardar en la base de datos
         await newAdmin.save();
@@ -146,7 +146,7 @@ const updateAdmin = async (req, reply) => {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
 
-        const adminBDD = await Admin.findById(id);
+        const adminBDD = await Admin.findById(id).select('cedula name lastName email phone updatedDate updateFor -__v -password');
 
         // Validar si el administrador existe
         if (!adminBDD) {
@@ -176,18 +176,17 @@ const updateAdmin = async (req, reply) => {
                 return reply.code(400).send({ message: "La cédula ya está registrada" });
             }
         }
-
-        // Crear contraseña aleatoria
-        const password = Math.random().toString(36).substring(2);
-
+        
         // Actualizar los campos del administrador
+        adminBDD.cedula = req.body.cedula || adminBDD?.cedula;
         adminBDD.name = req.body.name || adminBDD?.name;
         adminBDD.lastName = req.body.lastName || adminBDD?.lastName;
         adminBDD.email = req.body.email || adminBDD?.email;
         adminBDD.phone = req.body.phone || adminBDD?.phone;
-        adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + password + "-" + "1990") || adminBDD?.password;
         adminBDD.updateFor = adminLogged._id;
-        adminBDD.updatedDate = new Date();
+        adminBDD.updatedDate = Date.now();
+        // Enviar correo al administrador
+        sendMailUpdateUser(adminBDD.email, adminBDD.name, adminBDD.lastName);
         await adminBDD.save();
         return reply.code(200).send({ message: "Administrador actualizado con éxito" });
     } catch (error) {
@@ -220,6 +219,8 @@ const enableAdmin = async (req, reply) => {
         adminBDD.status = true;
         adminBDD.enableDate = Date.now();
         adminBDD.enableFor = adminLogged._id;
+        // Enviar correo al administrador
+        sendMailEnableUser(adminBDD.email, adminBDD.name, adminBDD.lastName, adminLogged.name, adminLogged.lastName);
         await adminBDD.save();
         return reply.code(200).send({ message: "Administrador habilitado con éxito" });
 
@@ -253,6 +254,8 @@ const disableAdmin = async (req, reply) => {
         adminBDD.status = false;
         adminBDD.disableDate = Date.now();
         adminBDD.disableFor = adminLogged._id;
+        // Enviar correo al administrador
+        sendMailDisableUser(adminBDD.email, adminBDD.name, adminBDD.lastName, adminLogged.name, adminLogged.lastName);
         await adminBDD.save();
         return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
     } catch (error) {

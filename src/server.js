@@ -4,6 +4,8 @@ import Ajv from 'ajv';
 import addErrors from "ajv-errors";
 import { envSchema } from './config/envSchema.js';
 import adminRoutes from "./routes/admin_routes.js";
+import docenteRoutes from "./routes/docente_routes.js";
+//import estudianteRoutes from "./routes/estudiante_routes.js";
 import connectDB from './database.js';
 import cloudinary from 'cloudinary';
 import fastifyMultipart from 'fastify-multipart';
@@ -67,6 +69,8 @@ fastify.get('/', async (req, reply) => {
 
 // Registrar rutas
 await fastify.register(adminRoutes, { prefix: "/api/admin" });
+await fastify.register(docenteRoutes, { prefix: "/api/docente" });
+//await fastify.register(estudianteRoutes, { prefix: "/api/estudiante" });
 
 // Exportar la instancia de Fastify
 export default fastify;

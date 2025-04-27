@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Enviar correo al nuevo administrador
-const sendMailNewAdmin = async (email, password, name, lastName) => {
+const sendMailNewUser = async (email, password, name, lastName) => {
     try {
         const mailOptions = {
             from: process.env.USER_MAILTRAP,
@@ -28,6 +28,66 @@ const sendMailNewAdmin = async (email, password, name, lastName) => {
                 <li><strong>Correo:</strong> ${email}</li>
                 <li><strong>Contraseña:</strong> Admin@${password}-1990</li>
             </ul>
+            <p>Saludos,<br/>Equipo de soporte.</p>
+        `
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+}
+
+const sendMailUpdateUser = async (email, name, lastName) => {
+    try {
+        const mailOptions = {
+            from: process.env.USER_MAILTRAP,
+            to: email,
+            subject: 'Actualización de cuenta',
+            html: `
+            <p>Hola <strong>${name} ${lastName}</strong>,</p>
+            <p>Tu cuenta ha sido actualizada con éxito.</p>
+            <p>Saludos,<br/>Equipo de soporte.</p>
+        `
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+}
+
+const sendMailEnableUser = async (email, name, lastName) => {
+    try {
+        const mailOptions = {
+            from: process.env.USER_MAILTRAP,
+            to: email,
+            subject: 'Activación de cuenta',
+            html: `
+            <p>Hola <strong>${name} ${lastName}</strong>,</p>
+            <p>Tu cuenta ha sido activada con éxito.</p>
+            <p>Saludos,<br/>Equipo de soporte.</p>
+        `
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+}
+
+const sendMailDisableUser = async (email, name, lastName) => {
+    try {
+        const mailOptions = {
+            from: process.env.USER_MAILTRAP,
+            to: email,
+            subject: 'Desactivación de cuenta',
+            html: `
+            <p>Hola <strong>${name} ${lastName}</strong>,</p>
+            <p>Tu cuenta ha sido desactivada.</p>
             <p>Saludos,<br/>Equipo de soporte.</p>
         `
         };
@@ -70,7 +130,7 @@ const sendMailNewPassword = async (email, password, name, lastName) => {
             html: `
             <p>Hola <strong>${name} ${lastName}</strong>,</p>
             <p>Tu contraseña ha sido restablecida con éxito.</p>
-            <p><strong>Tu nueva contraseña es:</strong> Admin@${password}-1990</p>
+            <p><strong>Tu nueva contraseña es:</strong> Esfot@${password}-1990</p>
             <p>Saludos,<br/>Equipo de soporte.</p>
         `
         };
@@ -82,4 +142,4 @@ const sendMailNewPassword = async (email, password, name, lastName) => {
     }
 }
 
-export { sendMailNewAdmin, sendMailRecoverPassword, sendMailNewPassword };
+export { sendMailNewUser, sendMailRecoverPassword, sendMailNewPassword, sendMailUpdateUser, sendMailEnableUser, sendMailDisableUser };

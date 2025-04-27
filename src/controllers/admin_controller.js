@@ -77,7 +77,7 @@ const registerAdmin = async (req, reply) => {
     try {
 
         const adminLogged = req.adminBDD;
-        
+
         const { cedula, name, lastName, email, phone } = req.body;
 
         // Verificar si la cédula ya está registrada
@@ -139,6 +139,7 @@ const registerAdmin = async (req, reply) => {
 const updateAdmin = async (req, reply) => {
     try {
         const { id } = req.params;
+        const adminLogged = req.adminBDD;
 
         // Validar si el ID es válido
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -185,6 +186,7 @@ const updateAdmin = async (req, reply) => {
         adminBDD.email = req.body.email || adminBDD?.email;
         adminBDD.phone = req.body.phone || adminBDD?.phone;
         adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + password + "-" + "1990") || adminBDD?.password;
+        adminBDD.updateFor = adminLogged._id;
         adminBDD.updatedDate = new Date();
         await adminBDD.save();
         return reply.code(200).send({ message: "Administrador actualizado con éxito" });
@@ -198,6 +200,7 @@ const updateAdmin = async (req, reply) => {
 const enableAdmin = async (req, reply) => {
     try {
         const { id } = req.params;
+        const adminLogged = req.adminBDD;
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
@@ -206,11 +209,17 @@ const enableAdmin = async (req, reply) => {
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
         }
+        // Verificar que no sea el mismo administrador
+        if (adminLogged._id.toString() === id) {
+            return reply.code(400).send({ message: "El administrador que inició sesión no puede habilitarse a sí mismo" });
+        }
         // Verificar si el administrador ya está habilitado
         if (adminBDD.status) {
             return reply.code(400).send({ message: "El administrador ya está habilitado" });
         }
         adminBDD.status = true;
+        adminBDD.enableDate = Date.now();
+        adminBDD.enableFor = adminLogged._id;
         await adminBDD.save();
         return reply.code(200).send({ message: "Administrador habilitado con éxito" });
 
@@ -225,6 +234,8 @@ const enableAdmin = async (req, reply) => {
 const disableAdmin = async (req, reply) => {
     try {
         const { id } = req.params;
+        const adminLogged = req.adminBDD;
+
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
@@ -232,11 +243,16 @@ const disableAdmin = async (req, reply) => {
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
         }
+        // Verificar que no sea el mismo administrador
+        if (adminLogged._id.toString() === id) {
+            return reply.code(400).send({ message: "El administrador que inició sesión no puede deshabilitarse a sí mismo" });
+        }
         if (!adminBDD.status) {
             return reply.code(400).send({ message: "El administrador ya está deshabilitado" });
         }
         adminBDD.status = false;
-        adminBDD.disableDate = new Date();
+        adminBDD.disableDate = Date.now();
+        adminBDD.disableFor = adminLogged._id;
         await adminBDD.save();
         return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
     } catch (error) {
@@ -347,7 +363,9 @@ const sendRecoverPassword = async (req, reply) => {
 // Método para actualizar contraseña
 const updatePassword = async (req, reply) => {
     try {
-        const { id } = req.params;
+
+        const { id } = req.adminBDD
+
         const { password, confirmPassword } = req.body;
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });

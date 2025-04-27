@@ -5,6 +5,8 @@ import addErrors from "ajv-errors";
 import { envSchema } from './config/envSchema.js';
 import adminRoutes from "./routes/admin_routes.js";
 import connectDB from './database.js';
+import cloudinary from 'cloudinary';
+import fastifyMultipart from 'fastify-multipart';
 
 // Configurar AJV con `errorMessage`
 const ajv = new Ajv({ allErrors: true, strict: false });
@@ -29,8 +31,30 @@ const options = {
 // Registra el plugin @fastify/env
 await fastify.register(fastifyEnv, options);
 
+// Registrar el plugin Multipart con validación para imágenes
+await fastify.register(fastifyMultipart, {
+    addToBody: true, // Para agregar los archivos al body
+    limits: {
+        fileSize: 5 * 1024 * 1024 // Limitar tamaño de archivo a 5MB
+    },
+    onFile: (field, file) => {
+        // Validar el tipo de archivo
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png']; // Formatos permitidos
+        if (!allowedTypes.includes(file.mimetype)) {
+            throw new Error('Tipo de archivo no permitido. Solo se permiten imágenes JPG, JPEG o PNG');
+        }
+    }
+});
+
+// Configurar Cloudinary
+cloudinary.config({
+    cloud_name: fastify.config.CLOUDINARY_CLOUD_NAME,
+    api_key: fastify.config.CLOUDINARY_API_KEY,
+    api_secret: fastify.config.CLOUDINARY_API_SECRET
+});
+
 // Mostrar variables de entorno
-console.log(`✅ Variables de entorno cargadas:`);
+console.log(`Variables de entorno cargadas:`);
 console.log(fastify.config);
 
 // Conectar a la base de datos

@@ -60,15 +60,15 @@ const adminSchema = new mongoose.Schema({
     },
     createdDate: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     },
     updatedDate: {
         type: Date,
         default: null
     },
-    enabledDate: {
+    enableDate: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     },
     disableDate: {
         type: Date,

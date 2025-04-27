@@ -123,11 +123,11 @@ const registerDocente = async (req, reply) => {
         // Encriptar la contraseña
         newDocente.password = await newDocente.encryptPassword("Esfot@" + password + "-1990");
 
-        // Enviar correo de bienvenida
-        await sendMailNewUser(email, password, name, lastName);
-
         // Guardar el nuevo docente en la base de datos
         await newDocente.save();
+
+        // Enviar correo de bienvenida
+        await sendMailNewUser(email, password, name, lastName);
 
         return reply.code(201).send({ message: "Docente registrado con éxito" });
 
@@ -196,6 +196,11 @@ const updateDocente = async (req, reply) => {
             docenteBDD.otherFaculty = null;
         }
 
+        // Validar body vacio dado a que el schema detecto campos no válidos
+        if (Object.keys(req.body).length === 0) {
+            return reply.code(400).send({ message: "No se han proporcionado los campos válidos para actualizar" });
+        }
+
         // Actualizar los datos del docente
         docenteBDD.cedula = req.body.cedula || docenteBDD?.cedula;
         docenteBDD.name = req.body.name || docenteBDD?.name;
@@ -219,4 +224,279 @@ const updateDocente = async (req, reply) => {
     }
 };
 
-export { loginDocente, registerDocente, updateDocente };
+// Método para habilitar un docente
+const enableDocente = async (req, reply) => {
+    try {
+        const { id } = req.params;
+        const adminLogged = req.adminBDD;
+
+        // Validar el ID si es válido
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: 'ID inválido' });
+        };
+
+        // Buscar el docente en la base de datos
+        const docenteBDD = await Docente.findById(id).select('cedula name lastName email phone career otherFaculty updatedDate updateFor status');
+
+        // Validar si el docente existe
+        if (!docenteBDD) {
+            return reply.code(404).send({ message: 'Docente no encontrado' });
+        };
+
+        // Si el docente ya está habilitado
+        if (docenteBDD.status) {
+            return reply.code(400).send({ message: 'El docente ya está habilitado' });
+        }
+
+        // Habilitar al docente
+        docenteBDD.status = true;
+        docenteBDD.enableFor = adminLogged._id;
+        docenteBDD.updatedDate = Date.now();
+
+        // Enviar correo de habilitación
+        await sendMailEnableUser(docenteBDD.email, docenteBDD.name, docenteBDD.lastName);
+
+        // Guardar los cambios en la base de datos
+        await docenteBDD.save();
+        
+        return reply.code(200).send({ message: 'Docente habilitado con éxito' });
+        
+    } catch (error) {
+        console.error("Error al habilitar docente:", error);
+        return reply.code(500).send({ message: 'Error al habilitar docente' });
+    }
+};
+
+// Método para deshabilitar un docente
+const disableDocente = async (req, reply) => {
+    try {
+        const { id } = req.params;
+        const adminLogged = req.adminBDD;
+
+        // Validar el ID si es válido
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: 'ID inválido' });
+        };
+
+        // Buscar el docente en la base de datos
+        const docenteBDD = await Docente.findById(id).select('cedula name lastName email phone career otherFaculty updatedDate updateFor status');
+
+        // Validar si el docente existe
+        if (!docenteBDD) {
+            return reply.code(404).send({ message: 'Docente no encontrado' });
+        };
+
+        // Si el docente ya está deshabilitado
+        if (!docenteBDD.status) {
+            return reply.code(400).send({ message: 'El docente ya está deshabilitado' });
+        }
+
+        // Deshabilitar al docente
+        docenteBDD.status = false;
+        docenteBDD.disableFor = adminLogged._id;
+        docenteBDD.updatedDate = Date.now();
+
+        // Enviar correo de deshabilitación
+        await sendMailDisableUser(docenteBDD.email, docenteBDD.name, docenteBDD.lastName);
+
+        // Guardar los cambios en la base de datos
+        await docenteBDD.save();
+        
+        return reply.code(200).send({ message: 'Docente deshabilitado con éxito' });
+        
+    } catch (error) {
+        console.error("Error al deshabilitar docente:", error);
+        return reply.code(500).send({ message: 'Error al deshabilitar docente' });
+    }
+};
+
+// Método para recuperar la contraseña de un docente
+const recoverPassword = async (req, reply) => {
+    try {
+        const { email } = req.body;
+
+        // Buscar el docente en la base de datos
+        const docenteBDD = await Docente.findOne({ email }).select('cedula name lastName email phone career otherFaculty updatedDate updateFor status');
+
+        // Validar si el docente existe
+        if (!docenteBDD) {
+            return reply.code(404).send({ message: 'Docente no encontrado' });
+        };
+
+        // Generar un token de recuperación
+        const resetToken = await docenteBDD.generateResetToken();
+
+        // Enviar correo de recuperación de contraseña
+        await sendMailRecoverPassword(docenteBDD.email, docenteBDD.name, docenteBDD.lastName, resetToken);
+
+        // Guardar el token en la base de datos
+        await docenteBDD.save();
+
+        return reply.code(200).send({ message: 'Correo de recuperación enviado' });
+
+    } catch (error) {
+        console.error("Error al recuperar contraseña:", error);
+        return reply.code(500).send({ message: 'Error al recuperar contraseña' });
+    }
+};
+
+// Método para verificar el token de recuperación de contraseña
+const verifyToken = async (req, reply) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return reply.code(400).send({ message: 'Token no proporcionado' });
+        }
+        const docenteBDD = await Docente.findOne({ resetToken: token })
+        if (!docenteBDD) {
+            return reply.code(400).send({ message: 'El token no es válido' });
+        }
+
+        // Verificar si el token ha expirado
+        if(docenteBDD.resetTokenExpire < Date.now()) {
+            return reply.code(400).send({ message: 'El token ha expirado' });
+        }
+        return reply.code(200).send({ message: 'Token válido' });
+    } catch (error) {
+        console.error("Error al verificar el token:", error);
+        return reply.code(500).send({ message: 'Error al verificar el token' });
+    }
+};
+
+// Método para enviar el correo de recuperación de contraseña
+const sendRecoverPassword = async (req, reply) => {
+    try {
+        const { token } = req.params;
+        const docenteBDD = await Docente.findOne({ resetToken: token })
+        if (!docenteBDD) {
+            return reply.code(400).send({ message: 'El token no es válido' });
+        }
+
+        // Verificar si el token ha expirado
+        if(docenteBDD.resetTokenExpire < Date.now()) {
+            return reply.code(400).send({ message: 'El token ha expirado' });
+        }
+
+        // Generar una nueva contraseña aleatoria
+        const newPassword = Math.random().toString(36).substring(2);
+
+        // Encriptar la nueva contraseña
+        docenteBDD.password = await docenteBDD.encryptPassword("Esfot@" + newPassword + "-1990");
+        // Limpiar el token de recuperación
+        docenteBDD.resetToken = null;
+        docenteBDD.resetTokenExpire = null;
+
+        // Limpiar el último inicio de sesión
+        docenteBDD.loginAttempts = 0;
+        docenteBDD.lockUntil = null;
+
+        // Guardar los cambios en la base de datos
+        await docenteBDD.save();
+        sendMailRecoverPassword(docenteBDD.email, docenteBDD.name, docenteBDD.lastName, newPassword);
+        return reply.code(200).send({ message: 'Correo de recuperación enviado' });
+    } catch (error) {
+        console.error("Error al enviar el correo de recuperación:", error);
+        return reply.code(500).send({ message: 'Error al enviar el correo de recuperación' });
+    }
+}
+
+// Método para actualizar la contraseña de un docente
+const updatePassword = async (req, reply) => {
+    try {
+        const { id } = req.params;
+        const { password } = req.body;
+
+        // Validar el ID si es válido
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: 'ID inválido' });
+        };
+
+        // Buscar el docente en la base de datos
+        const docenteBDD = await Docente.findById(id).select('cedula name lastName email phone career otherFaculty updatedDate updateFor status');
+
+        // Validar si el docente existe
+        if (!docenteBDD) {
+            return reply.code(404).send({ message: 'Docente no encontrado' });
+        };
+
+        // Encriptar la nueva contraseña
+        docenteBDD.password = await docenteBDD.encryptPassword("Esfot@" + password + "-1990");
+
+        // Limpiar el último inicio de sesión
+        docenteBDD.loginAttempts = 0;
+        docenteBDD.lockUntil = null;
+
+        // Guardar los cambios en la base de datos
+        await docenteBDD.save();
+        
+        return reply.code(200).send({ message: 'Contraseña actualizada con éxito' });
+        
+    } catch (error) {
+        console.error("Error al actualizar la contraseña:", error);
+        return reply.code(500).send({ message: 'Error al actualizar la contraseña' });
+    }
+};
+
+// Método para obtener todos los docentes
+const getAllDocentes = async (req, reply) => {
+    try {
+        const docentes = await Docente.find().select('-__v -updatedAt -createdAt');
+        return reply.code(200).send(docentes);
+    } catch (error) {
+        console.error("Error al obtener docentes:", error);
+        return reply.code(500).send({ message: 'Error al obtener docentes' });
+    }
+};
+
+// Método para obtener un docente por ID
+const getDocenteById = async (req, reply) => {
+    try {
+        const { id } = req.params;
+
+        // Validar el ID si es válido
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return reply.code(400).send({ message: 'ID inválido' });
+        };
+
+        // Buscar el docente en la base de datos
+        const docenteBDD = await Docente.findById(id).select('-__v -updatedAt -createdAt');
+
+        // Validar si el docente existe
+        if (!docenteBDD) {
+            return reply.code(404).send({ message: 'Docente no encontrado' });
+        };
+
+        return reply.code(200).send(docenteBDD);
+    } catch (error) {
+        console.error("Error al obtener docente:", error);
+        return reply.code(500).send({ message: 'Error al obtener docente' });
+    }
+};
+
+// Método para obtener el perfil del docente
+const getDocenteProfile = async (req, reply) => {
+    try {
+        const docenteLogged = req.docenteBDD;
+        return reply.code(200).send(docenteLogged);
+    } catch (error) {
+        console.error("Error al obtener el perfil del docente:", error);
+        return reply.code(500).send({ message: 'Error al obtener el perfil del docente' });
+    }
+};
+
+// Exportar los métodos
+export {
+    loginDocente,
+    registerDocente,
+    updateDocente,
+    enableDocente,
+    disableDocente,
+    recoverPassword,
+    verifyToken,
+    sendRecoverPassword,
+    updatePassword,
+    getAllDocentes,
+    getDocenteById,
+    getDocenteProfile
+};

@@ -114,12 +114,11 @@ const registerAdmin = async (req, reply) => {
         // Encriptar la contraseña
         newAdmin.password = await newAdmin.encryptPassword("Esfot@" + password + "-1990");
 
-        // Enviar correo al nuevo administrador
-        sendMailNewUser(email, password, name, lastName);
-
         // Guardar en la base de datos
         await newAdmin.save();
 
+        // Enviar correo al nuevo administrador
+        sendMailNewUser(email, password, name, lastName);
         return reply.code(201).send({ message: "Administrador registrado con éxito" });
 
     } catch (error) {
@@ -146,7 +145,7 @@ const updateAdmin = async (req, reply) => {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
 
-        const adminBDD = await Admin.findById(id).select('cedula name lastName email phone updatedDate updateFor -__v -password');
+        const adminBDD = await Admin.findById(id).select('cedula name lastName email phone updatedDate updateFor');
 
         // Validar si el administrador existe
         if (!adminBDD) {
@@ -176,7 +175,12 @@ const updateAdmin = async (req, reply) => {
                 return reply.code(400).send({ message: "La cédula ya está registrada" });
             }
         }
-        
+
+        // Validar body vacio dado a que el schema detecto campos no válidos
+        if (Object.keys(req.body).length === 0) {
+            return reply.code(400).send({ message: "No se han proporcionado los campos válidos para actualizar" });
+        }
+
         // Actualizar los campos del administrador
         adminBDD.cedula = req.body.cedula || adminBDD?.cedula;
         adminBDD.name = req.body.name || adminBDD?.name;
@@ -185,9 +189,9 @@ const updateAdmin = async (req, reply) => {
         adminBDD.phone = req.body.phone || adminBDD?.phone;
         adminBDD.updateFor = adminLogged._id;
         adminBDD.updatedDate = Date.now();
+        await adminBDD.save();
         // Enviar correo al administrador
         sendMailUpdateUser(adminBDD.email, adminBDD.name, adminBDD.lastName);
-        await adminBDD.save();
         return reply.code(200).send({ message: "Administrador actualizado con éxito" });
     } catch (error) {
         console.error("Error al actualizar administrador:", error);
@@ -219,9 +223,9 @@ const enableAdmin = async (req, reply) => {
         adminBDD.status = true;
         adminBDD.enableDate = Date.now();
         adminBDD.enableFor = adminLogged._id;
+        await adminBDD.save();
         // Enviar correo al administrador
         sendMailEnableUser(adminBDD.email, adminBDD.name, adminBDD.lastName, adminLogged.name, adminLogged.lastName);
-        await adminBDD.save();
         return reply.code(200).send({ message: "Administrador habilitado con éxito" });
 
     } catch (error) {
@@ -254,9 +258,9 @@ const disableAdmin = async (req, reply) => {
         adminBDD.status = false;
         adminBDD.disableDate = Date.now();
         adminBDD.disableFor = adminLogged._id;
+        await adminBDD.save();
         // Enviar correo al administrador
         sendMailDisableUser(adminBDD.email, adminBDD.name, adminBDD.lastName, adminLogged.name, adminLogged.lastName);
-        await adminBDD.save();
         return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
     } catch (error) {
         console.error("Error al deshabilitar administrador:", error);
@@ -342,7 +346,7 @@ const sendRecoverPassword = async (req, reply) => {
         // Generar nueva contraseña
         const newPassword = Math.random().toString(36).substring(2);
         // Encriptar la nueva contraseña
-        adminBDD.password = await adminBDD.encryptPassword("Admin" + "@" + newPassword + "-" + "1990");
+        adminBDD.password = await adminBDD.encryptPassword("Esfot" + "@" + newPassword + "-" + "1990");
         // Limpiar el token y la fecha de expiración
         adminBDD.resetToken = null;
         adminBDD.resetTokenExpire = null;
@@ -454,4 +458,17 @@ const getAdminProfile = async (req, reply) => {
 
 
 
-export { loginAdmin, registerAdmin, updateAdmin, enableAdmin, disableAdmin, recoverPassword, verifyToken, sendRecoverPassword, updatePassword, getAllAdmins, getAdminById, getAdminProfile };
+export {
+    loginAdmin,
+    registerAdmin,
+    updateAdmin,
+    enableAdmin,
+    disableAdmin,
+    recoverPassword,
+    verifyToken,
+    sendRecoverPassword,
+    updatePassword,
+    getAllAdmins,
+    getAdminById,
+    getAdminProfile
+};

@@ -29,7 +29,7 @@ const adminSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^[a-zA-Z]+\.[a-zA-Z]+[0-9]*@epn\.edu\.ec$/, 'El correo debe ser institucional.']
+        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$/, 'El correo debe ser institucional.']
     },
     password: {
         type: String,
@@ -153,7 +153,7 @@ adminSchema.methods.matchPassword = async function (password) {
 
 // Método para actualizar el último inicio de sesión
 adminSchema.methods.updateLastLogin = async function () {
-    this.lastLogin = new Date();
+    this.lastLogin = Date.now();
     await this.save();
 };
 

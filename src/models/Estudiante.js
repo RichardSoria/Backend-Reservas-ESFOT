@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import moment from "moment-timezone";
+import { type } from "os";
 
-// Esquema del docente
-const docenteSchema = new mongoose.Schema({
+const estudianteSchema = new mongoose.Schema({
     cedula: {
         type: String,
         required: [true, 'La cédula es requerida'],
@@ -29,7 +29,7 @@ const docenteSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$/, 'El correo debe ser institucional.']
+        match: [/^[a-zA-Z]+\.[a-zA-Z]+[0-9]*@epn\.edu\.ec$/, 'El correo debe ser institucional.']
     },
     password: {
         type: String,
@@ -50,7 +50,7 @@ const docenteSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        default: "docente",
+        default: "estudiante",
         required: [true, 'El rol es requerido']
     },
     status: {
@@ -61,19 +61,20 @@ const docenteSchema = new mongoose.Schema({
         type: String,
         required: [true, 'La carrera es requerida'],
         enum: [
-            'Tecnología Superior en Agua y Saneamiento Ambiental', 
-            'Tecnología Superior en Desarrollo de Software', 
+            'Tecnología Superior en Agua y Saneamiento Ambiental',
+            'Tecnología Superior en Desarrollo de Software',
             'Tecnología Superior en Electromecánica',
-            'Tecnología Superior en Redes y Telecomunicaciones', 
+            'Tecnología Superior en Redes y Telecomunicaciones',
             'Tecnología Superior en Procesamiento de Alimentos',
-            'Tecnología Superior en Procesamiento Industrial de la Madera',
-            'No pertenece a ninguna carrera dentro de la facultad'
+            'Tecnología Superior en Procesamiento Industrial de la Madera'
         ]
     },
-    otherFaculty: {
+    lastPeriod: {
         type: String,
-        default: null,
-        maxlength: [50, 'La facultad no puede tener más de 50 caracteres']
+        required: [true, 'El periodo es requerido'],
+        minlength: [6, 'El periodo debe tener 6 caracteres'],
+        maxlength: [6, 'El periodo no puede tener más de 6 caracteres'],
+        match: [/^\d{4}-(A|B)$/, 'El periodo debe tener el formato YYYY-A o YYYY-B']
     },
     numberReservation: {
         type: Number,
@@ -138,7 +139,7 @@ const docenteSchema = new mongoose.Schema({
 });
 
 // Método para validar si una cédula es ecuadoriana
-docenteSchema.statics.verifyEcuadorianDNI = async function(cedula) {
+estudianteSchema.statics.isCedulaEcuadoriana = function (cedula) {
     if (!/^\d{10}$/.test(cedula)) return false;
 
     const provincia = parseInt(cedula.substring(0, 2), 10);
@@ -163,37 +164,38 @@ docenteSchema.statics.verifyEcuadorianDNI = async function(cedula) {
 };
 
 // Método para encriptar la contraseña antes de guardar
-docenteSchema.methods.encryptPassword = async function (password) {
+estudianteSchema.methods.encryptPassword = async function (password) {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
 };
 
 // Método para comparar la contraseña ingresada con la almacenada
-docenteSchema.methods.matchPassword = async function (password) {
+estudianteSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 
 // Método para actualizar el último inicio de sesión
-docenteSchema.methods.updateLastLogin = async function () {
+estudianteSchema.methods.updateLastLogin = async function () {
     this.lastLogin = Date.now();
     await this.save();
 };
 
 // Método para reiniciar los intentos de inicio de sesión
-docenteSchema.methods.resetLoginAttempts = async function () {
+estudianteSchema.methods.resetLoginAttempts = async function () {
     this.loginAttempts = 0;
     this.lockUntil = null;
     await this.save();
 };
 
 // Método para generar un token de recuperación seguro
-docenteSchema.methods.createResetToken = async function () {
-    const resetToken = crypto.randomBytes(32).toString('hex');
+estudianteSchema.methods.createResetToken = async function () {
+    const resetToken = crypto.randomBytes(32).toString("hex");
     this.resetToken = resetToken;
-    this.resetTokenExpire = moment().add(10, 'minute').toDate(); // Expira en 10 minutos
+    this.resetTokenExpire = moment().add(10, "minutes").toDate(); // Expira en 10 minutos
     await this.save();
     return resetToken;
 };
 
-// Crear el modelo de administrador
-export default mongoose.model('Docente', docenteSchema);
+// Crear el modelo de Estudiante
+const Estudiante = mongoose.model("Estudiante", estudianteSchema);
+

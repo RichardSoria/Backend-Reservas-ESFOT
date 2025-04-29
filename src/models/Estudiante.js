@@ -197,5 +197,5 @@ estudianteSchema.methods.createResetToken = async function () {
 };
 
 // Crear el modelo de Estudiante
-const Estudiante = mongoose.model("Estudiante", estudianteSchema);
+export default mongoose.model("Estudiante", estudianteSchema);
 

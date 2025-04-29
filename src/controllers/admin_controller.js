@@ -10,7 +10,7 @@ const loginAdmin = async (req, reply) => {
         const { email, password } = req.body;
 
         // Buscar el usuario en la base de datos
-        const adminBDD = await Admin.findOne({ email }).select('-lastLogin -resetToken -resetTokenExpire -__v -updatedAt -createdAt');
+        const adminBDD = await Admin.findOne({ email });
 
         // Validar si el usuario existe
         if (!adminBDD) {
@@ -152,6 +152,14 @@ const updateAdmin = async (req, reply) => {
             return reply.code(404).send({ message: "El administrador no existe" });
         }
 
+        // Validar si la cédula ya está registrada
+        if (adminBDD.cedula != req.body.cedula) {
+            const existingCedula = await Admin.findOne({ cedula: req.body.cedula });
+            if (existingCedula) {
+                return reply.code(400).send({ message: "La cédula ya está registrada" });
+            }
+        }
+
         // Validar si el correo, teléfono o cédula ya están registrados
         if (adminBDD.email != req.body.email) {
             const existingEmail = await Admin.findOne({ email: req.body.email });
@@ -165,14 +173,6 @@ const updateAdmin = async (req, reply) => {
             const existingPhone = await Admin.findOne({ phone: req.body.phone });
             if (existingPhone) {
                 return reply.code(400).send({ message: "El teléfono ya está registrado" });
-            }
-        }
-
-        // Validar si la cédula ya está registrada
-        if (adminBDD.cedula != req.body.cedula) {
-            const existingCedula = await Admin.findOne({ cedula: req.body.cedula });
-            if (existingCedula) {
-                return reply.code(400).send({ message: "La cédula ya está registrada" });
             }
         }
 

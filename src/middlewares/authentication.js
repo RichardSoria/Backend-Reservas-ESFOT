@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
 import Docente from '../models/Docente.js';
-//import Estudiante from '../models/Estudiante.js';
+import Estudiante from '../models/Estudiante.js';
 
 const verifyAuth = async (req, reply) => {
     const authHeader = req.headers.authorization;

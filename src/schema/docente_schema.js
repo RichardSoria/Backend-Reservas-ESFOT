@@ -108,7 +108,7 @@ export const updateDocenteSchema = {
                 type: 'string',
                 minLength: 10,
                 maxLength: 10,
-                pattern: '09[89][0-9]{7}$',
+                pattern: '^[0-9]{10}$',
                 errorMessage: {
                     pattern: 'La cédula debe tener exactamente 10 dígitos numéricos',
                     minLength: 'El campo de cédula es obligatorio',
@@ -150,7 +150,7 @@ export const updateDocenteSchema = {
                 type: 'string',
                 minLength: 10,
                 maxLength: 10,
-                pattern: '^[0-9]{10}$',
+                pattern: '09[89][0-9]{7}$',
                 errorMessage: {
                     pattern: 'El teléfono debe tener 10 dígitos',
                     minLength: 'El campo de teléfono es obligatorio',

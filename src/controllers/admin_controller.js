@@ -118,18 +118,11 @@ const registerAdmin = async (req, reply) => {
         await newAdmin.save();
 
         // Enviar correo al nuevo administrador
-        sendMailNewUser(email, password, name, lastName);
+        await sendMailNewUser(email, password, name, lastName);
         return reply.code(201).send({ message: "Administrador registrado con éxito" });
 
     } catch (error) {
         console.error("Error al registrar administrador:", error);
-
-        // Manejar error de clave duplicada en MongoDB
-        if (error.code === 11000) {
-            const field = Object.keys(error.keyValue)[0];
-            return reply.code(400).send({ message: `El ${field} ya está registrado` });
-        }
-
         return reply.code(500).send({ message: "Error al registrar administrador" });
     }
 };
@@ -302,6 +295,7 @@ const recoverPassword = async (req, reply) => {
         sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName);
 
         return reply.code(200).send({ message: "Correo de recuperación enviado" });
+    
     } catch (error) {
         console.error("Error al recuperar contraseña:", error);
         return reply.code(500).send({ message: "Error al recuperar contraseña" });

@@ -9,6 +9,8 @@ import docenteRoutes from "./routes/docente_routes.js";
 import connectDB from './database.js';
 import cloudinary from 'cloudinary';
 import fastifyMultipart from 'fastify-multipart';
+import swagger from '@fastify/swagger';
+import swaggerUI from '@fastify/swagger-ui';
 
 // Configurar AJV con `errorMessage`
 const ajv = new Ajv({ allErrors: true, strict: false });
@@ -67,10 +69,43 @@ fastify.get('/', async (req, reply) => {
     return { message: 'Servidor en ejecución', port: fastify.config.PORT };
 });
 
+// Registrar el plugin de Swagger
+await fastify.register(swagger, {
+    openapi: {
+      info: {
+        title: 'API RESTful Reservas-ESFOT',
+        version: '1.0.0',
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      security: [{ bearerAuth: [] }],
+    },
+  });
+  
+  // Swagger UI
+  await fastify.register(swaggerUI, {
+    routePrefix: '/api/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: true,
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+  });
+  
+
 // Registrar rutas
 await fastify.register(adminRoutes, { prefix: "/api/admin" });
 await fastify.register(docenteRoutes, { prefix: "/api/docente" });
 //await fastify.register(estudianteRoutes, { prefix: "/api/estudiante" });
+
 
 // Exportar la instancia de Fastify
 export default fastify;

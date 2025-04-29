@@ -133,13 +133,6 @@ const registerDocente = async (req, reply) => {
 
     } catch (error) {
         console.error("Error al registrar docente:", error);
-
-        // Manejar error de clave duplicada en MongoDB
-        if (error.code === 11000) {
-            const field = Object.keys(error.keyValue)[0];
-            return reply.code(400).send({ message: `El ${field} ya está registrado` });
-        }
-
         return reply.code(500).send({ message: "Error al registrar docente" });
     }
 };
@@ -316,21 +309,35 @@ const recoverPassword = async (req, reply) => {
         const { email } = req.body;
 
         // Buscar el docente en la base de datos
-        const docenteBDD = await Docente.findOne({ email }).select('cedula name lastName email phone career otherFaculty updatedDate updateFor status');
+        const docenteBDD = await Docente.findOne({ email });
 
         // Validar si el docente existe
         if (!docenteBDD) {
-            return reply.code(404).send({ message: 'Docente no encontrado' });
+            return reply.code(404).send({ message: 'El correo no está registrado' });
         };
 
+        // Validar si el docente está habilitado
+        if (!docenteBDD.status) {
+            return reply.code(400).send({ message: 'El docente está deshabilitado' });
+        }
+
+        // Validar si el docente tiene un token de recuperación
+        if (docenteBDD.resetToken && docenteBDD.resetTokenExpire > Date.now()) {
+            return reply.code(400).send({ message: 'Ya se ha enviado un correo de recuperación' });
+        }
+
+        // Verificar si el docente ya tiene un token de recuperación
+        if (docenteBDD.resetToken && docenteBDD.resetTokenExpire < Date.now()) {
+            const token = await docenteBDD.createResetToken();
+            // Enviar correo de recuperación de contraseña
+            sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName);
+            return reply.code(200).send({ message: "Correo de recuperación enviado"});
+        }
+
         // Generar un token de recuperación
-        const resetToken = await docenteBDD.generateResetToken();
-
+        const token = await docenteBDD.createResetToken();
         // Enviar correo de recuperación de contraseña
-        await sendMailRecoverPassword(docenteBDD.email, docenteBDD.name, docenteBDD.lastName, resetToken);
-
-        // Guardar el token en la base de datos
-        await docenteBDD.save();
+        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName);
 
         return reply.code(200).send({ message: 'Correo de recuperación enviado' });
 
@@ -393,7 +400,7 @@ const sendRecoverPassword = async (req, reply) => {
 
         // Guardar los cambios en la base de datos
         await docenteBDD.save();
-        sendMailRecoverPassword(docenteBDD.email, docenteBDD.name, docenteBDD.lastName, newPassword);
+        sendMailNewPassword(docenteBDD.email, docenteBDD.name, docenteBDD.lastName, newPassword);
         return reply.code(200).send({ message: 'Correo de recuperación enviado' });
     } catch (error) {
         console.error("Error al enviar el correo de recuperación:", error);

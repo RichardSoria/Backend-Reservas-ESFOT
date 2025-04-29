@@ -40,7 +40,7 @@ export const registerDocenteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -50,7 +50,7 @@ export const registerDocenteSchema = {
                 type: 'string',
                 minLength: 10,
                 maxLength: 10,
-                pattern: '^[0-9]{10}$',
+                pattern: '09[89][0-9]{7}$',
                 errorMessage: {
                     pattern: 'El teléfono debe tener 10 dígitos',
                     minLength: 'El campo de teléfono es obligatorio',
@@ -108,7 +108,7 @@ export const updateDocenteSchema = {
                 type: 'string',
                 minLength: 10,
                 maxLength: 10,
-                pattern: '^[0-9]{10}$',
+                pattern: '09[89][0-9]{7}$',
                 errorMessage: {
                     pattern: 'La cédula debe tener exactamente 10 dígitos numéricos',
                     minLength: 'El campo de cédula es obligatorio',
@@ -140,7 +140,7 @@ export const updateDocenteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -197,7 +197,7 @@ export const loginDocenteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -253,7 +253,7 @@ export const recoverDocentePasswordSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-zA-Z]+\\.[a-zA-Z]+[0-9]*@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"

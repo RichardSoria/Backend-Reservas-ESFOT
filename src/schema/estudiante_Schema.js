@@ -8,7 +8,7 @@ export const loginEstudianteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -63,7 +63,7 @@ export const registerEstudianteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -98,7 +98,7 @@ export const registerEstudianteSchema = {
                 type: 'string',
                 minLength: 6,
                 maxLength: 6,
-                pattern: '^\d{4}-(A|B)$',
+                pattern: '^\\d{4}-(A|B)$',
                 errorMessage: {
                     minLength: 'El periodo debe tener 6 caracteres',
                     maxlength: 'El periodo no puede tener más de 6 caracteres',
@@ -145,7 +145,7 @@ export const updateEstudianteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -180,7 +180,7 @@ export const updateEstudianteSchema = {
                 type: 'string',
                 minLength: 6,
                 maxLength: 6,
-                pattern: '^\d{4}-(A|B)$',
+                pattern: '^\\d{4}-(A|B)$',
                 errorMessage: {
                     minLength: 'El periodo debe tener 6 caracteres',
                     maxlength: 'El periodo no puede tener más de 6 caracteres',
@@ -228,7 +228,7 @@ export const recoverPasswordSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"

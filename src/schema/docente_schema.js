@@ -6,7 +6,7 @@ export const loginDocenteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -67,7 +67,7 @@ export const registerDocenteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -167,7 +167,7 @@ export const updateDocenteSchema = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -223,7 +223,7 @@ export const recoverPasswordSchemaDocente = {
             email: {
                 type: 'string',
                 minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
@@ -262,21 +262,3 @@ export const updateDocentePasswordSchema = {
     }
 };
 
-export const recoverDocentePasswordSchema = {
-    body: {
-        type: 'object',
-        required: ['email'],
-        properties: {
-            email: {
-                type: 'string',
-                minLength: 1,
-                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
-                errorMessage: {
-                    pattern: "El correo debe ser institucional",
-                    minLength: "El campo de correo es obligatorio"
-                }
-            }
-        },
-        additionalProperties: false
-    }
-};

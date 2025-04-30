@@ -367,7 +367,7 @@ const sendRecoverPassword = async (req, reply) => {
         // Guardar en la base de datos
         await adminBDD.save();
         // Enviar correo con la nueva contraseña
-        sendMailNewPassword(adminBDD.email, newPassword, adminBDD.name, adminBDD.lastName);
+        sendMailNewPassword(adminBDD.email, newPassword, adminBDD.name, adminBDD.lastName, adminBDD.rol);
         return reply.code(200).send({ message: "Contraseña de recuperación enviada" });
 
     } catch (error) {

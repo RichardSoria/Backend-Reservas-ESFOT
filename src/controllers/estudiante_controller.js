@@ -50,7 +50,7 @@ const loginEstudiante = async (req, reply) => {
 
         // Si la contraseña es correcta, reiniciar los intentos de inicio de sesión
         if (verifyPassword && estudianteBDD.status) {
-            await esutidanteBDD.resetLoginAttempts();
+            await estudianteBDD.resetLoginAttempts();
             await estudianteBDD.updateLastLogin();
 
             const lastLoginLocal = estudianteBDD.lastLogin
@@ -81,7 +81,7 @@ const registerEstudiante = async (req, reply) => {
             return reply.status(401).send({ message: "No tienes permisos para realizar esta acción" });
         }
 
-        const { cedula, name, lastName, email, phone } = req.body;
+        const { cedula, name, lastName, email, phone, career, lastPeriod } = req.body;
 
         // Verificar si la cédula ya esta registrada
         const existingCedula = await Estudiante.findOne({ cedula });
@@ -117,6 +117,8 @@ const registerEstudiante = async (req, reply) => {
             lastName,
             email,
             phone,
+            career,
+            lastPeriod,
             createFor: adminLogged._id,
             enableFor: adminLogged._id
         });
@@ -195,6 +197,8 @@ const updateEstudiante = async (req, reply) => {
         estudianteBDD.lastName = req.body.lastName || estudianteBDD.lastName;
         estudianteBDD.email = req.body.email || estudianteBDD.email;
         estudianteBDD.phone = req.body.phone || estudianteBDD.phone;
+        estudianteBDD.career = req.body.career || estudianteBDD.career;
+        estudianteBDD.lastPeriod = req.body.lastPeriod || estudianteBDD.lastPeriod;
         estudianteBDD.updateFor = adminLogged._id;
         estudianteBDD.updateDate = Date.now();
         await estudianteBDD.save();
@@ -305,12 +309,17 @@ const recoverPassword = async (req, reply) => {
 
         // Validar si el estudiante existe
         if (!estudianteBDD) {
-            return reply.status(404).json({ message: "El estudiante no existe" });
+            return reply.code(404).send({ message: "El estudiante no existe" });
+        }
+
+        // Validar si el estudiante está habilitado
+        if (!estudianteBDD.status) {
+            return reply.code(400).send({ message: "El estudiante está deshabilitado" });
         }
 
         // Validar si el estudiante tiene un token de restablecimiento
         if (estudianteBDD.resetToken && estudianteBDD.resetTokenExpire > Date.now()) {
-            return reply.status(400).json({ message: "Ya se ha enviado un correo de recuperación" });
+            return reply.code(400).send({ message: "Ya se ha enviado un correo de recuperación" });
         }
 
         // Verificar si el administrador tiene un token de restablecimiento expirado
@@ -385,7 +394,7 @@ const sendRecoverPassword = async (req, reply) => {
         // Guardar en la base de datos
         await estudianteBDD.save();
         // Enviar correo con la nueva contraseña
-        sendMailNewPassword(adminBDD.email, newPassword, estudianteBDD.name, estudianteBDD.lastName);
+        sendMailNewPassword(estudianteBDD.email, newPassword, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol);
         return reply.code(200).send({ message: "Contraseña de recuperación enviada" });
 
     } catch (error) {

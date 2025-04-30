@@ -417,7 +417,7 @@ const sendRecoverPassword = async (req, reply) => {
 
         // Guardar los cambios en la base de datos
         await docenteBDD.save();
-        sendMailNewPassword(docenteBDD.email, newPassword, docenteBDD.name, docenteBDD.lastName, );
+        sendMailNewPassword(docenteBDD.email, newPassword, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
         return reply.code(200).send({ message: 'Correo de recuperación enviado' });
     } catch (error) {
         console.error("Error al enviar el correo de recuperación:", error);
@@ -546,3 +546,5 @@ export {
     getDocenteById,
     getDocenteProfile
 };
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGJhMWM1MGIzOWY5Zjk3NTlkOTAzMCIsInJvbCI6ImFkbWluaXN0cmFkb3IiLCJpYXQiOjE3NDU5NzM1OTUsImV4cCI6MTc0NjA1OTk5NX0.1pafxTP9iMpoTtxtKH4y_XzRsBa6EWgWz504S2l2mu8

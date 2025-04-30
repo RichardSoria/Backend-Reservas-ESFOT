@@ -29,7 +29,7 @@ const adminSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$/, 'El correo debe ser institucional.']
+        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\.edu\.ec$/, 'El correo debe ser institucional.']
     },
     password: {
         type: String,

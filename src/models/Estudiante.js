@@ -29,7 +29,7 @@ const estudianteSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^[a-zA-Z]+\.[a-zA-Z]+[0-9]*@epn\.edu\.ec$/, 'El correo debe ser institucional.']
+        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\.edu\.ec$/, 'El correo debe ser institucional.']
     },
     password: {
         type: String,
@@ -170,7 +170,7 @@ estudianteSchema.methods.encryptPassword = async function (password) {
 };
 
 // Método para comparar la contraseña ingresada con la almacenada
-estudianteSchema.methods.comparePassword = async function (password) {
+estudianteSchema.methods.matchPassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 

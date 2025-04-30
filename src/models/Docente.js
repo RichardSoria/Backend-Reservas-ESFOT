@@ -29,7 +29,7 @@ const docenteSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$/, 'El correo debe ser institucional.']
+        match: [/^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\.edu\.ec$/, 'El correo debe ser institucional.']
     },
     password: {
         type: String,
@@ -61,10 +61,10 @@ const docenteSchema = new mongoose.Schema({
         type: String,
         required: [true, 'La carrera es requerida'],
         enum: [
-            'Tecnología Superior en Agua y Saneamiento Ambiental', 
-            'Tecnología Superior en Desarrollo de Software', 
+            'Tecnología Superior en Agua y Saneamiento Ambiental',
+            'Tecnología Superior en Desarrollo de Software',
             'Tecnología Superior en Electromecánica',
-            'Tecnología Superior en Redes y Telecomunicaciones', 
+            'Tecnología Superior en Redes y Telecomunicaciones',
             'Tecnología Superior en Procesamiento de Alimentos',
             'Tecnología Superior en Procesamiento Industrial de la Madera',
             'No pertenece a ninguna carrera dentro de la facultad'
@@ -138,7 +138,7 @@ const docenteSchema = new mongoose.Schema({
 });
 
 // Método para validar si una cédula es ecuadoriana
-docenteSchema.statics.verifyEcuadorianDNI = async function(cedula) {
+docenteSchema.statics.verifyEcuadorianDNI = async function (cedula) {
     if (!/^\d{10}$/.test(cedula)) return false;
 
     const provincia = parseInt(cedula.substring(0, 2), 10);

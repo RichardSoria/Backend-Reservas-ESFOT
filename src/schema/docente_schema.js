@@ -1,3 +1,30 @@
+export const loginDocenteSchema = {
+    body: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+            email: {
+                type: 'string',
+                minLength: 1,
+                pattern: "^[a-z]+\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
+            },
+            password: {
+                type: 'string',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
+            }
+        },
+        additionalProperties: false
+    }
+};
 
 export const registerDocenteSchema = {
     body: {
@@ -188,11 +215,10 @@ export const updateDocenteSchema = {
     }
 };
 
-
-export const loginDocenteSchema = {
+export const recoverPasswordSchemaDocente = {
     body: {
         type: 'object',
-        required: ['email', 'password'],
+        required: ['email'],
         properties: {
             email: {
                 type: 'string',
@@ -201,15 +227,6 @@ export const loginDocenteSchema = {
                 errorMessage: {
                     pattern: "El correo debe ser institucional",
                     minLength: "El campo de correo es obligatorio"
-                }
-            },
-            password: {
-                type: 'string',
-                minLength: 8,
-                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
-                errorMessage: {
-                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
-                    minLength: "La contraseña debe tener al menos 8 caracteres"
                 }
             }
         },

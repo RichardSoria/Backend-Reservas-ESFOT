@@ -75,8 +75,11 @@ const loginAdmin = async (req, reply) => {
 
 const registerAdmin = async (req, reply) => {
     try {
-
         const adminLogged = req.adminBDD;
+
+        if (!adminLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
 
         const { cedula, name, lastName, email, phone } = req.body;
 
@@ -132,6 +135,10 @@ const updateAdmin = async (req, reply) => {
     try {
         const { id } = req.params;
         const adminLogged = req.adminBDD;
+
+        if (!adminLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
 
         // Validar si el ID es válido
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -197,6 +204,10 @@ const enableAdmin = async (req, reply) => {
     try {
         const { id } = req.params;
         const adminLogged = req.adminBDD;
+        if (!adminLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
+
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
@@ -233,6 +244,10 @@ const disableAdmin = async (req, reply) => {
     try {
         const { id } = req.params;
         const adminLogged = req.adminBDD;
+
+        if (!adminLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
@@ -366,8 +381,8 @@ const updatePassword = async (req, reply) => {
     try {
 
         const { id } = req.adminBDD
-
         const { password, confirmPassword } = req.body;
+        
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
@@ -397,6 +412,12 @@ const updatePassword = async (req, reply) => {
 // Método para obtener todos los administradores	
 const getAllAdmins = async (req, reply) => {
     try {
+        const adminLogged = req.adminBDD;
+
+        if (!adminLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
+
         const admins = await Admin.find().select('-__v -updatedAt');
         return reply.code(200).send(admins);
     } catch (error) {
@@ -409,6 +430,12 @@ const getAllAdmins = async (req, reply) => {
 const getAdminById = async (req, reply) => {
     try {
         const { id } = req.params;
+        const adminLogged = req.adminBDD;
+
+        if (!adminLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
+
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
@@ -427,7 +454,7 @@ const getAdminById = async (req, reply) => {
 const getAdminProfile = async (req, reply) => {
     try {
         const adminBDD = req.adminBDD;
-
+        
         // Verificar si el administrador existe
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
@@ -441,16 +468,13 @@ const getAdminProfile = async (req, reply) => {
             phone: adminBDD.phone,
             rol: adminBDD.rol,
             status: adminBDD.status,
-            lastLoginLocal: moment(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss"),
+            lastLoginLocal: moment(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
         });
     } catch (error) {
         console.error("Error al obtener perfil de administrador:", error);
         return reply.code(500).send({ message: "Error al obtener perfil de administrador" });
     }
 };
-
-
-
 
 export {
     loginAdmin,

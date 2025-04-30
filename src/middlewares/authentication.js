@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import Docente from '../models/Docente.js';
+//import Estudiante from '../models/Estudiante.js';
 
 const verifyAuth = async (req, reply) => {
     const authHeader = req.headers.authorization;
@@ -14,14 +16,12 @@ const verifyAuth = async (req, reply) => {
         if (rol === 'administrador') {
             req.adminBDD = await Admin.findById(id).select('-password -__v');
         } else if (rol === 'docente') {
-            req.profBDD = await Admin.findById(id).select('-password -__v');
+            req.docenteBDD = await Docente.findById(id).select('-password -__v');
         } else if (rol === 'estudiante') {
-            req.estuBDD = await Admin.findById(id).select('-password -__v');
+            req.estudianteBDD = await Estudiante.findById(id).select('-password -__v');
         } else {
             return reply.code(401).send({ message: 'No tienes permisos para acceder a esta ruta' });
         }
-
-        // No necesitas "next()"
     } catch (error) {
         return reply.code(401).send({ message: 'Token inválido' });
     }

@@ -26,7 +26,7 @@ const sendMailNewUser = async (email, password, name, lastName) => {
             <p><strong>Credenciales de acceso:</strong></p>
             <ul>
                 <li><strong>Correo:</strong> ${email}</li>
-                <li><strong>Contraseña:</strong> Admin@${password}-1990</li>
+                <li><strong>Contraseña:</strong> Esfot@${password}-1990</li>
             </ul>
             <p>Saludos,<br/>Equipo de soporte.</p>
         `

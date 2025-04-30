@@ -300,14 +300,14 @@ const recoverPassword = async (req, reply) => {
         if (adminBDD.resetTokenExpire && adminBDD.resetTokenExpire < new Date()) {
             const token = await adminBDD.createResetToken();
             // Enviar correo de recuperación
-            sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName);
+            sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, adminBDD.rol);
             return reply.code(200).send({ message: "Correo de recuperación enviado" });
         }
         // Crear un token de restablecimiento
         const token = await adminBDD.createResetToken();
 
         // Enviar correo de recuperación
-        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName);
+        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, adminBDD.rol);
 
         return reply.code(200).send({ message: "Correo de recuperación enviado" });
     

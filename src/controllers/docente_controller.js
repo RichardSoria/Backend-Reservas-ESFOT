@@ -347,14 +347,14 @@ const recoverPassword = async (req, reply) => {
         if (docenteBDD.resetToken && docenteBDD.resetTokenExpire < Date.now()) {
             const token = await docenteBDD.createResetToken();
             // Enviar correo de recuperación de contraseña
-            sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName);
+            sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
             return reply.code(200).send({ message: "Correo de recuperación enviado" });
         }
 
         // Generar un token de recuperación
         const token = await docenteBDD.createResetToken();
         // Enviar correo de recuperación de contraseña
-        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName);
+        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
 
         return reply.code(200).send({ message: 'Correo de recuperación enviado' });
 

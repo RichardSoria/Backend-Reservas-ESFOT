@@ -326,7 +326,7 @@ const recoverPassword = async (req, reply) => {
         if (estudianteBDD.resetTokenExpire && estudianteBDD.resetTokenExpire < new Date()) {
             const token = await estudianteBDD.createResetToken();
             // Enviar correo de recuperación
-            sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName);
+            sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol);
             return reply.code(200).send({ message: "Correo de recuperación enviado" });
         }
 
@@ -334,7 +334,7 @@ const recoverPassword = async (req, reply) => {
         const token = await estudianteBDD.createResetToken();
 
         // Enviar correo de recuperación
-        sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName);
+        sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol);
         return reply.code(200).send({ message: "Correo de recuperación enviado" });
 
     } catch (error) {
@@ -394,7 +394,7 @@ const sendRecoverPassword = async (req, reply) => {
         // Guardar en la base de datos
         await estudianteBDD.save();
         // Enviar correo con la nueva contraseña
-        sendMailNewPassword(estudianteBDD.email, newPassword, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol);
+        sendMailNewPassword(estudianteBDD.email, newPassword, estudianteBDD.name, estudianteBDD.lastName);
         return reply.code(200).send({ message: "Contraseña de recuperación enviada" });
 
     } catch (error) {

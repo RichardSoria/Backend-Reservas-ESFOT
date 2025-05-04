@@ -418,7 +418,7 @@ const getAllAdmins = async (req, reply) => {
             return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
         }
 
-        const admins = await Admin.find().select('-__v -updatedAt');
+        const admins = await Admin.find().select('-__v');
         return reply.code(200).send(admins);
     } catch (error) {
         console.error("Error al obtener administradores:", error);

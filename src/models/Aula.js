@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import moment from "moment-timezone";
 
 // Esquema del aula
 const aulaSchema = new mongoose.Schema({
@@ -7,7 +6,7 @@ const aulaSchema = new mongoose.Schema({
         type: String,
         required: [true, 'El código del aula es requerido'],
         unique: true,
-        match: [/^[A-Z]\d{2}\/[A-Z]{2}\d\/[A-Z]\d{3}$/, 'Formato inválido (ej: E21/PB2/E035)'],
+        match: [/^E\d{2}\/PB\d\/E\d{3}$/, 'Formato inválido (ej: E21/PB2/E035)'],
         uppercase: true
     },
     name: {
@@ -34,6 +33,10 @@ const aulaSchema = new mongoose.Schema({
             values: ['pequeño', 'mediano', 'grande'],
             message: 'El tamaño debe ser pequeño, mediano o grande'
         }
+    },
+    numberReservations: {
+        type: Number,
+        default: 0
     },
     image: {
         type: String,
@@ -80,3 +83,6 @@ const aulaSchema = new mongoose.Schema({
         default: null
     },
 });
+
+// Exportar el modelo
+export default mongoose.model('Aula', aulaSchema);

@@ -6,12 +6,14 @@ import { envSchema } from './config/envSchema.js';
 import adminRoutes from "./routes/admin_routes.js";
 import docenteRoutes from "./routes/docente_routes.js";
 import estudianteRoutes from "./routes/estudiante_routes.js";
+import laboratorioRoutes from './routes/laboratorio_routes.js';
 import aulaRoutes from './routes/aula_routes.js';
 import connectDB from './database.js';
 import cloudinary from 'cloudinary';
 import fastifyMultipart from 'fastify-multipart';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
+
 
 // Configurar AJV con `errorMessage`
 const ajv = new Ajv({ allErrors: true, strict: false });
@@ -107,7 +109,7 @@ await fastify.register(adminRoutes, { prefix: "/api/admin" });
 await fastify.register(docenteRoutes, { prefix: "/api/docente" });
 await fastify.register(estudianteRoutes, { prefix: "/api/estudiante" });
 await fastify.register(aulaRoutes, { prefix: "/api/aula" });
-
+await fastify.register(laboratorioRoutes, { prefix: "/api/laboratorio"})
 
 // Exportar la instancia de Fastify
 export default fastify;

@@ -116,7 +116,7 @@ const enableAula = async (req, reply) => {
         aulaBDD.enableBy = adminLogged._id;
 
         await aulaBDD.save();
-        return reply.code(200).send({ message: "Aula habilitada con écito" });
+        return reply.code(200).send({ message: "Aula habilitada con écito<" });
 
     } catch (error) {
         console.error("Error al habilitar el aula:", error);

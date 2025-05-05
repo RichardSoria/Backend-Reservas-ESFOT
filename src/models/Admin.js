@@ -50,7 +50,7 @@ const adminSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        default: "administrador",
+        default: "Admin",
         required: [true, 'El rol es requerido']
     },
     status: {

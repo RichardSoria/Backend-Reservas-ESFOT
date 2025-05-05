@@ -50,7 +50,7 @@ const estudianteSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        default: "estudiante",
+        default: "Estudiante",
         required: [true, 'El rol es requerido']
     },
     status: {

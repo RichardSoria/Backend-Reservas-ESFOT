@@ -50,7 +50,7 @@ const docenteSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        default: "docente",
+        default: "Docente",
         required: [true, 'El rol es requerido']
     },
     status: {

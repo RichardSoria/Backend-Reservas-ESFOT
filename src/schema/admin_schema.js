@@ -1,105 +1,188 @@
-export const createReservaSchema = {
+export const loginAdminSchema = {
     body: {
         type: 'object',
-        required: [
-            'userID',
-            'userRol',
-            'placeID',
-            'placeType',
-            'purpose',
-            'description',
-            'startTime',
-            'endTime'
-        ],
+        required: ['email', 'password'],
         properties: {
-            userID: {
-                type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$',
-                errorMessage: {
-                    pattern: 'El userID debe ser un ID de objeto válido de MongoDB'
-                }
-            },
-            userRol: {
-                type: 'string',
-                enum: ['Estudiante', 'Docente', 'Admin'],
-                errorMessage: {
-                    enum: 'El rol del usuario debe ser uno de los siguientes: Estudiante, Docente, Admin'
-                }
-            },
-            placeID: {
-                type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$',
-                errorMessage: {
-                    pattern: 'El placeID debe ser un ID de objeto válido de MongoDB'
-                }
-            },
-            placeType: {
-                type: 'string',
-                enum: ['Aula', 'Laboratorio'],
-                errorMessage: {
-                    enum: 'El tipo de lugar debe ser uno de los siguientes: Aula, Laboratorio'
-                }
-            },
-            purpose: {
-                type: 'string',
-                enum: ['Clase', 'Prueba/Examen', 'Proyecto', 'Evento/Capacitación', 'Otro'],
-                errorMessage: {
-                    enum: 'El propósito debe ser uno de los siguientes: Clase, Prueba/Examen, Proyecto, Evento/Capacitación, Otro'
-                }
-            },
-            description: {
+            email: {
                 type: 'string',
                 minLength: 1,
-                maxLength: 200,
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
                 errorMessage: {
-                    minLength: 'La descripción es obligatoria',
-                    maxLength: 'La descripción no puede tener más de 200 caracteres'
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
                 }
             },
-            status: {
+            password: {
                 type: 'string',
-                enum: ['Pendiente', 'Aprobada', 'Rechazada', 'Cancelada'],
-                default: 'Pendiente',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
                 errorMessage: {
-                    enum: 'El estado debe ser uno de los siguientes: Pendiente, Aprobada, Rechazada, Cancelada'
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
                 }
-            },
-            rejectReason: {
+            }
+        },
+        additionalProperties: false
+    }
+};
+
+export const registerAdminSchema = {
+    body: {
+        type: 'object',
+        required: ['cedula', 'name', 'lastName', 'email', 'phone'],
+        properties: {
+            cedula: {
                 type: 'string',
-                maxLength: 200,
-                default: null,
+                minLength: 1,
+                pattern: '^[0-9]{10}$',
                 errorMessage: {
-                    maxLength: 'El motivo de rechazo no puede tener más de 200 caracteres'
+                    pattern: 'La cédula debe tener exactamente 10 dígitos numéricos',
+                    minLength: 'El campo de cédula es obligatorio'
                 }
             },
-            startTime: {
+            name: {
                 type: 'string',
-                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$', // Validación de formato de hora (HH:mm)
+                minLength: 1,
+                pattern: '^[a-zA-Z]{1,20}$',
                 errorMessage: {
-                    pattern: 'La hora de inicio debe estar en formato HH:mm'
-                },
-                validate: (time) => {
-                    const [hours] = time.split(':').map(Number);
-                    if (hours < 7 || hours > 20) {
-                        throw new Error('La hora de inicio debe estar entre las 07:00 y las 20:00');
-                    }
+                    pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
+                    minLength: 'El campo de nombre es obligatorio'
                 }
             },
-            endTime: {
+            lastName: {
                 type: 'string',
-                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$', // Validación de formato de hora (HH:mm)
+                minLength: 1,
+                pattern: '^[a-zA-Z]{1,20}$',
                 errorMessage: {
-                    pattern: 'La hora de fin debe estar en formato HH:mm'
-                },
-                validate: (time, data) => {
-                    const [hours] = time.split(':').map(Number);
-                    const start = parseInt(data.startTime.split(':')[0]);
-                    if (hours <= start || hours > 20) {
-                        throw new Error('La hora de fin debe ser posterior a la de inicio y antes de las 20:00');
-                    }
+                    pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
+                    minLength: 'El campo de apellido es obligatorio'
                 }
             },
-            additionalProperties: false
+            email: {
+                type: 'string',
+                minLength: 1,
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
+            },
+            phone: {
+                type: 'string',
+                minLength: 10,
+                maxLength: 10,
+                pattern: '09[89][0-9]{7}$',
+                errorMessage: {
+                    pattern: 'El número debe empezar con 098 o 099 y tener 10 dígitos',
+                    minLength: 'El campo de teléfono es obligatorio',
+                    maxLength: 'El teléfono debe tener exactamente 10 dígitos'
+                }
+            }
         }
+        ,
+        additionalProperties: false
+    }
+};
+
+export const updateAdminSchema = {
+    body: {
+        type: 'object',
+        properties: {
+            cedula: {
+                type: 'string',
+                minLength: 1,
+                pattern: '^[0-9]{10}$',
+                errorMessage: {
+                    pattern: 'La cédula debe tener exactamente 10 dígitos numéricos',
+                    minLength: 'El campo de cédula es obligatorio'
+                }
+            },
+            name: {
+                type: 'string',
+                minLength: 1,
+                pattern: '^[a-zA-Z]{1,20}$',
+                errorMessage: {
+                    pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
+                    minLength: 'El campo de nombre es obligatorio'
+                }
+            },
+            lastName: {
+                type: 'string',
+                minLength: 1,
+                pattern: '^[a-zA-Z]{1,20}$',
+                errorMessage: {
+                    pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
+                    minLength: 'El campo de apellido es obligatorio'
+                }
+            },
+            email: {
+                type: 'string',
+                minLength: 1,
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
+            },
+            phone: {
+                type: 'string',
+                minLength: 10,
+                maxLength: 10,
+                pattern: '09[89][0-9]{7}$',
+                errorMessage: {
+                    pattern: 'El número debe empezar con 098 o 099 y tener 10 dígitos',
+                    minLength: 'El campo de teléfono es obligatorio',
+                    maxLength: 'El teléfono debe tener exactamente 10 dígitos'
+                }
+            }
+        },
+        additionalProperties: false
+    }
+};
+
+export const updatePasswordSchema = {
+    body: {
+        type: 'object',
+        required: ['password', 'confirmPassword'],
+        properties: {
+            password: {
+                type: 'string',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
+            },
+            confirmPassword: {
+                type: 'string',
+                minLength: 8,
+                pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$',
+                errorMessage: {
+                    pattern: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
+                    minLength: "La contraseña debe tener al menos 8 caracteres"
+                }
+            }
+        },
+        additionalProperties: false
+    }
+};
+
+export const recoverPasswordSchema = {
+    body: {
+        type: 'object',
+        required: ['email'],
+        properties: {
+            email: {
+                type: 'string',
+                minLength: 1,
+                pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$",
+                errorMessage: {
+                    pattern: "El correo debe ser institucional",
+                    minLength: "El campo de correo es obligatorio"
+                }
+            }
+        },
+        additionalProperties: false
     }
 };

@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import moment from "moment-timezone";
-import { match, rejects } from "assert";
 
 // Esquema de Reserva
 const reservaSchema = new mongoose.Schema({
@@ -126,3 +125,5 @@ reservaSchema.statics.isDateTimeReserved = async function (reservationDate, star
 
     return overlappingReservations.length > 0;
 };
+
+export default mongoose.model("Reserva", reservaSchema);

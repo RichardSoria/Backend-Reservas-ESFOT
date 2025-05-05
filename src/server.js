@@ -8,6 +8,7 @@ import docenteRoutes from "./routes/docente_routes.js";
 import estudianteRoutes from "./routes/estudiante_routes.js";
 import laboratorioRoutes from './routes/laboratorio_routes.js';
 import aulaRoutes from './routes/aula_routes.js';
+import reservaRoutes from './routes/reserva_routes.js';
 import connectDB from './database.js';
 import cloudinary from 'cloudinary';
 import fastifyMultipart from 'fastify-multipart';
@@ -110,6 +111,7 @@ await fastify.register(docenteRoutes, { prefix: "/api/docente" });
 await fastify.register(estudianteRoutes, { prefix: "/api/estudiante" });
 await fastify.register(aulaRoutes, { prefix: "/api/aula" });
 await fastify.register(laboratorioRoutes, { prefix: "/api/laboratorio"})
+await fastify.register(reservaRoutes, { prefix: "/api/reserva" });
 
 // Exportar la instancia de Fastify
 export default fastify;

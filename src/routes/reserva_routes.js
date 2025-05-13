@@ -1,7 +1,6 @@
 import { createReserva, generateReserva, approveReserva, rejectReserva, cancelReserva, getAllReservas, getReservaById } from '../controllers/reserva_controller.js';
 import { createReservaSchema, rejectReasonSchema } from '../schema/reserva_schema.js';
 import verifyAuth from '../middlewares/authentication.js';
-import { Schema } from 'mongoose';
 
 export default async function reservaRoutes(fastify) {
     fastify.post('/create', { preHandler: verifyAuth, schema: createReservaSchema }, createReserva);

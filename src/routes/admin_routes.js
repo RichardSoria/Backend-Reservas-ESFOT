@@ -9,7 +9,7 @@ export default async function adminRoutes(fastify) {
     fastify.put("/enable/:id", { preHandler: verifyAuth},  enableAdmin);
     fastify.put("/disable/:id", { preHandler: verifyAuth}, disableAdmin);
     fastify.post("/recover-password", { schema: recoverPasswordSchema }, recoverPassword);
-    fastify.get("/recover-password/:token", verifyToken);
+    fastify.get("/verify-token/:token", verifyToken);
     fastify.post("/send-recover-password/:token", sendRecoverPassword);
     fastify.put("/update-password", { preHandler: verifyAuth, schema: updatePasswordSchema }, updatePassword);
     fastify.get("/admins", { preHandler: verifyAuth}, getAllAdmins);

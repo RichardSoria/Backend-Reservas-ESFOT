@@ -99,7 +99,7 @@ const sendMailDisableUser = async (email, name, lastName) => {
     }
 }
 
-const sendMailRecoverPassword = async (email, token, name, lastName, rol) => {
+const sendMailRecoverPassword = async (email, token, name, lastName, resetTokenExpire) => {
     try {
         const mailOptions = {
             from: process.env.USER_MAILTRAP,
@@ -108,7 +108,8 @@ const sendMailRecoverPassword = async (email, token, name, lastName, rol) => {
             html: `
             <p>Hola <strong>${name} ${lastName}</strong>,</p>
             <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
-            <a href="http://localhost:3000/api/${rol}/recover-password/${token}">Restablecer contraseña</a>
+            <a href="${process.env.URL_FRONTEND}/verify-token/${token}">Restablecer contraseña</a>
+            <p>Este enlace es válido hasta las ${resetTokenExpire}</p>
             <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
             <p>Saludos,<br/>Equipo de soporte.</p>
         `

@@ -10,7 +10,7 @@ export default async function estudianteRoutes(fastify) {
     fastify.put('/enable/:id', { preHandler: verifyAuth }, enableEstudiante);
     fastify.put('/disable/:id', { preHandler: verifyAuth }, disableEstudiante);
     fastify.post('/recover-password', { schema: recoverPasswordSchema }, recoverPassword);
-    fastify.get('/recover-password/:token', verifyToken);
+    fastify.get('/verify-token/:token', verifyToken);
     fastify.post('/send-recover-password/:token', sendRecoverPassword);
     fastify.put('/update-password', { preHandler: verifyAuth, schema: updatePasswordSchema }, updatePassword);
     fastify.get('/estudiantes', { preHandler: verifyAuth }, getAllEstudiantes);

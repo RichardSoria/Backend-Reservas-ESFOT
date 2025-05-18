@@ -14,7 +14,7 @@ const loginEstudiante = async (req, reply) => {
 
         // Validar si el usuario existe
         if (!estudianteBDD) {
-            return reply.status(404).json({ message: "Credenciales Incorrectas" });
+            return reply.code(400).send({ message: 'Credenciales Incorrectas' });
         }
 
         // Si el usuario esta bloqueado y ya paso el tiempo de bloqueo
@@ -303,43 +303,32 @@ const disableEstudiante = async (req, reply) => {
 const recoverPassword = async (req, reply) => {
     try {
         const { email } = req.body;
-
-        // Buscar el estudiante en la base de datos
         const estudianteBDD = await Estudiante.findOne({ email });
 
-        // Validar si el estudiante existe
-        if (!estudianteBDD) {
-            return reply.code(404).send({ message: "El estudiante no existe" });
+        if (!estudianteBDD || !estudianteBDD.status) {
+            return reply.code(200).send({
+                message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+            });
         }
 
-        // Validar si el estudiante está habilitado
-        if (!estudianteBDD.status) {
-            return reply.code(400).send({ message: "El estudiante está deshabilitado" });
+        if (estudianteBDD.resetToken && estudianteBDD.resetTokenExpire > new Date()) {
+            return reply.code(200).send({
+                message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+            });
         }
 
-        // Validar si el estudiante tiene un token de restablecimiento
-        if (estudianteBDD.resetToken && estudianteBDD.resetTokenExpire > Date.now()) {
-            return reply.code(400).send({ message: "Ya se ha enviado un correo de recuperación" });
-        }
-
-        // Verificar si el administrador tiene un token de restablecimiento expirado
-        if (estudianteBDD.resetTokenExpire && estudianteBDD.resetTokenExpire < new Date()) {
-            const token = await estudianteBDD.createResetToken();
-            // Enviar correo de recuperación
-            sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol);
-            return reply.code(200).send({ message: "Correo de recuperación enviado" });
-        }
-
-        // Crear un nuevo token de recuperación
         const token = await estudianteBDD.createResetToken();
+        const resetTokenExpire = moment(estudianteBDD.resetTokenExpire).tz("America/Guayaquil").format("HH:mm:ss");
 
-        // Enviar correo de recuperación
-        sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol);
-        return reply.code(200).send({ message: "Correo de recuperación enviado" });
+        sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol, resetTokenExpire);
+
+        return reply.code(200).send({
+            message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+        });
 
     } catch (error) {
         console.error("Error al recuperar contraseña:", error);
-        return reply.code(500).send({ message: "Error al recuperar contraseña" });
+        return reply.code(500).send({ message: "Error interno del servidor" });
     }
 };
 
@@ -356,9 +345,9 @@ const verifyToken = async (req, reply) => {
         }
         // Verificar si el token ha expirado
         if (estudianteBDD.resetTokenExpire < new Date()) {
-            return reply.code(400).send({ message: "El token ha expirado" });
+            return reply.code(400).send({ message: "El token ha expirado. Solicite un nuevo correo de recuperación" });
         }
-        return reply.code(200).send({ message: "Token válido" });
+        return reply.code(200).send({ message: "Verificación exitosa. Haga clic en 'Enviar Contraseña de Recuperación' para continuar" });
 
     } catch (error) {
         console.error("Error al verificar token:", error);
@@ -373,11 +362,11 @@ const sendRecoverPassword = async (req, reply) => {
 
         const estudianteBDD = await Estudiante.findOne({ resetToken: token });
         if (!estudianteBDD) {
-            return reply.code(400).send({ message: "El token no es válido" });
+            return reply.code(400).send({ message: "El enlace de recuperación ya ha sido utilizado." });
         }
         // Verificar si el token ha expirado
         if (estudianteBDD.resetTokenExpire < new Date()) {
-            return reply.code(400).send({ message: "El token ha expirado" });
+            return reply.code(400).send({ message: "El token ha expirado. Solicite un nuevo correo de recuperación" });
         }
         // Generar nueva contraseña
         const newPassword = Math.random().toString(36).substring(2);
@@ -395,7 +384,7 @@ const sendRecoverPassword = async (req, reply) => {
         await estudianteBDD.save();
         // Enviar correo con la nueva contraseña
         sendMailNewPassword(estudianteBDD.email, newPassword, estudianteBDD.name, estudianteBDD.lastName);
-        return reply.code(200).send({ message: "Contraseña de recuperación enviada" });
+        return reply.code(200).send({ message: "Contraseña de recuperación enviada." });
 
     } catch (error) {
         console.error("Error al enviar la contraseña de recuperación:", error);

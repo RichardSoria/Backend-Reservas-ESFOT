@@ -280,40 +280,35 @@ const disableAdmin = async (req, reply) => {
 // Método para recuperar contraseña
 const recoverPassword = async (req, reply) => {
     try {
-
         const { email } = req.body;
 
         const adminBDD = await Admin.findOne({ email });
-        if (!adminBDD) {
-            return reply.code(404).send({ message: "El correo no está registrado" });
-        }
-        // Verificar si el administrador está habilitado
-        if (!adminBDD.status) {
-            return reply.code(400).send({ message: "El administrador está deshabilitado" });
-        }
-        // Verificar si el administrador tiene un token de restablecimiento
-        if (adminBDD.resetToken && adminBDD.resetTokenExpire > new Date()) {
-            return reply.code(400).send({ message: "Ya se ha enviado un correo de recuperación" });
+
+        if (!adminBDD || !adminBDD.status) {
+            return reply.code(200).send({
+                message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+            });
         }
 
-        // Verificar si el administrador tiene un token de restablecimiento expirado
-        if (adminBDD.resetTokenExpire && adminBDD.resetTokenExpire < new Date()) {
-            const token = await adminBDD.createResetToken();
-            // Enviar correo de recuperación
-            sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, adminBDD.rol);
-            return reply.code(200).send({ message: "Correo de recuperación enviado" });
+        if (adminBDD.resetToken && adminBDD.resetTokenExpire > new Date()) {
+            return reply.code(200).send({
+                message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+            });
         }
-        // Crear un token de restablecimiento
+
         const token = await adminBDD.createResetToken();
 
-        // Enviar correo de recuperación
-        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, adminBDD.rol);
+        const resetTokenExpire = moment(adminBDD.resetTokenExpire).tz("America/Guayaquil").format("HH:mm:ss");
 
-        return reply.code(200).send({ message: "Correo de recuperación enviado" });
-    
+        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, adminBDD.rol, resetTokenExpire);
+
+        return reply.code(200).send({
+            message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+        });
+
     } catch (error) {
         console.error("Error al recuperar contraseña:", error);
-        return reply.code(500).send({ message: "Error al recuperar contraseña" });
+        return reply.code(500).send({ message: "Error interno del servidor" });
     }
 };
 
@@ -330,9 +325,9 @@ const verifyToken = async (req, reply) => {
         }
         // Verificar si el token ha expirado
         if (adminBDD.resetTokenExpire < new Date()) {
-            return reply.code(400).send({ message: "El token ha expirado" });
+            return reply.code(400).send({ message: "El token ha expirado. Solicite un nuevo correo de recuperación." });
         }
-        return reply.code(200).send({ message: "Token válido" });
+        return reply.code(200).send({ message: "Verificación exitosa. Haga clic en 'Enviar Contraseña de Recuperación' para continuar." });
     } catch (error) {
         console.error("Error al verificar token:", error);
         return reply.code(500).send({ message: "Error al verificar token" });
@@ -346,11 +341,11 @@ const sendRecoverPassword = async (req, reply) => {
 
         const adminBDD = await Admin.findOne({ resetToken: token });
         if (!adminBDD) {
-            return reply.code(400).send({ message: "El token no es válido" });
+            return reply.code(400).send({ message: "El enlace de recuperación ya ha sido utilizado." });
         }
         // Verificar si el token ha expirado
         if (adminBDD.resetTokenExpire < new Date()) {
-            return reply.code(400).send({ message: "El token ha expirado" });
+            return reply.code(400).send({ message: "El token ha expirado. Solicite un nuevo correo de recuperación" });
         }
         // Generar nueva contraseña
         const newPassword = Math.random().toString(36).substring(2);
@@ -368,7 +363,7 @@ const sendRecoverPassword = async (req, reply) => {
         await adminBDD.save();
         // Enviar correo con la nueva contraseña
         sendMailNewPassword(adminBDD.email, newPassword, adminBDD.name, adminBDD.lastName, adminBDD.rol);
-        return reply.code(200).send({ message: "Contraseña de recuperación enviada" });
+        return reply.code(200).send({ message: "Contraseña de recuperación enviada." });
 
     } catch (error) {
         console.error("Error al enviar la contraseña de recuperación:", error);
@@ -382,7 +377,7 @@ const updatePassword = async (req, reply) => {
 
         const { id } = req.adminBDD
         const { password, confirmPassword } = req.body;
-        
+
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
@@ -454,7 +449,7 @@ const getAdminById = async (req, reply) => {
 const getAdminProfile = async (req, reply) => {
     try {
         const adminBDD = req.adminBDD;
-        
+
         // Verificar si el administrador existe
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });

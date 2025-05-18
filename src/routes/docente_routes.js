@@ -9,7 +9,7 @@ export default async function docenteRoutes(fastify) {
     fastify.put("/enable/:id", { preHandler: verifyAuth }, enableDocente);
     fastify.put("/disable/:id", { preHandler: verifyAuth }, disableDocente);
     fastify.post("/recover-password", { schema: recoverPasswordSchemaDocente}, recoverPassword);
-    fastify.get("/recover-password/:token", verifyToken);
+    fastify.get("/verify-token/:token", verifyToken);
     fastify.post("/send-recover-password/:token", sendRecoverPassword);
     fastify.put("/update-password", { preHandler: verifyAuth, schema: updateDocentePasswordSchema }, updatePassword);
     fastify.get("/docentes", { preHandler: verifyAuth }, getAllDocentes);

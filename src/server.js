@@ -118,5 +118,8 @@ await fastify.register(aulaRoutes, { prefix: "/api/aula" });
 await fastify.register(laboratorioRoutes, { prefix: "/api/laboratorio" })
 await fastify.register(reservaRoutes, { prefix: "/api/reserva" });
 
+// Manejar rutas no encontradas
+fastify.setNotFoundHandler((request, reply) => { reply.status(404).send({ error: 'Ruta no encontrada' });});
+
 // Exportar la instancia de Fastify
 export default fastify;

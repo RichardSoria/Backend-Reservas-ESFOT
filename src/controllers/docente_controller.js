@@ -324,43 +324,32 @@ const disableDocente = async (req, reply) => {
 const recoverPassword = async (req, reply) => {
     try {
         const { email } = req.body;
-
-        // Buscar el docente en la base de datos
         const docenteBDD = await Docente.findOne({ email });
 
-        // Validar si el docente existe
-        if (!docenteBDD) {
-            return reply.code(404).send({ message: 'El correo no está registrado' });
-        };
-
-        // Validar si el docente está habilitado
-        if (!docenteBDD.status) {
-            return reply.code(400).send({ message: 'El docente está deshabilitado' });
+        if (!docenteBDD || !docenteBDD.status) {
+            return reply.code(200).send({
+                message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+            });
         }
 
-        // Validar si el docente tiene un token de recuperación
-        if (docenteBDD.resetToken && docenteBDD.resetTokenExpire > Date.now()) {
-            return reply.code(400).send({ message: 'Ya se ha enviado un correo de recuperación' });
+        if (docenteBDD.resetToken && docenteBDD.resetTokenExpire > new Date()) {
+            return reply.code(200).send({
+                message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+            });
         }
 
-        // Verificar si el docente ya tiene un token de recuperación
-        if (docenteBDD.resetToken && docenteBDD.resetTokenExpire < Date.now()) {
-            const token = await docenteBDD.createResetToken();
-            // Enviar correo de recuperación de contraseña
-            sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
-            return reply.code(200).send({ message: "Correo de recuperación enviado" });
-        }
-
-        // Generar un token de recuperación
         const token = await docenteBDD.createResetToken();
-        // Enviar correo de recuperación de contraseña
-        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
+        const resetTokenExpire = moment(docenteBDD.resetTokenExpire).tz("America/Guayaquil").format("HH:mm:ss");
 
-        return reply.code(200).send({ message: 'Correo de recuperación enviado' });
+        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol, resetTokenExpire);
+
+        return reply.code(200).send({
+            message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
+        });
 
     } catch (error) {
         console.error("Error al recuperar contraseña:", error);
-        return reply.code(500).send({ message: 'Error al recuperar contraseña' });
+        return reply.code(500).send({ message: "Error interno del servidor" });
     }
 };
 
@@ -379,9 +368,9 @@ const verifyToken = async (req, reply) => {
 
         // Verificar si el token ha expirado
         if (docenteBDD.resetTokenExpire < Date.now()) {
-            return reply.code(400).send({ message: 'El token ha expirado' });
+            return reply.code(400).send({ message: "El token ha expirado. Solicite un nuevo correo de recuperación" });
         }
-        return reply.code(200).send({ message: 'Token válido' });
+        return reply.code(200).send({ message: "Verificación exitosa. Haga clic en 'Enviar Contraseña de Recuperación' para continuar" });
     } catch (error) {
         console.error("Error al verificar el token:", error);
         return reply.code(500).send({ message: 'Error al verificar el token' });
@@ -394,12 +383,12 @@ const sendRecoverPassword = async (req, reply) => {
         const { token } = req.params;
         const docenteBDD = await Docente.findOne({ resetToken: token })
         if (!docenteBDD) {
-            return reply.code(400).send({ message: 'El token no es válido' });
+            return reply.code(400).send({ message: "El enlace de recuperación ya ha sido utilizado." });
         }
 
         // Verificar si el token ha expirado
         if (docenteBDD.resetTokenExpire < Date.now()) {
-            return reply.code(400).send({ message: 'El token ha expirado' });
+            return reply.code(400).send({ message: "El token ha expirado. Solicite un nuevo correo de recuperación" });
         }
 
         // Generar una nueva contraseña aleatoria
@@ -418,7 +407,7 @@ const sendRecoverPassword = async (req, reply) => {
         // Guardar los cambios en la base de datos
         await docenteBDD.save();
         sendMailNewPassword(docenteBDD.email, newPassword, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
-        return reply.code(200).send({ message: 'Correo de recuperación enviado' });
+        return reply.code(200).send({ message: "Contraseña de recuperación enviada." });
     } catch (error) {
         console.error("Error al enviar el correo de recuperación:", error);
         return reply.code(500).send({ message: 'Error al enviar el correo de recuperación' });
@@ -436,7 +425,7 @@ const updatePassword = async (req, reply) => {
         }
 
         const docenteBDD = await Docente.findById(id)
-        if (!docenteBDD){
+        if (!docenteBDD) {
             return reply.code(404).send({ message: "El docente no existe" })
         }
         // Comprobar si los campos están vacíos o contienen solo espacios

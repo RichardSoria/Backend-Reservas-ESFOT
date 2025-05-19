@@ -11,13 +11,14 @@ const verifyAuth = async (req, reply) => {
 
     try {
         const token = authHeader.split(' ')[1];
+
         const { id, rol } = jwt.verify(token, req.server.config.JWT_SECRET);
 
-        if (rol === 'administrador') {
+        if (rol === 'Admin') {
             req.adminBDD = await Admin.findById(id).select('-password -__v');
-        } else if (rol === 'docente') {
+        } else if (rol === 'Docente') {
             req.docenteBDD = await Docente.findById(id).select('-password -__v');
-        } else if (rol === 'estudiante') {
+        } else if (rol === 'Estudiante') {
             req.estudianteBDD = await Estudiante.findById(id).select('-password -__v');
         } else {
             return reply.code(401).send({ message: 'No tienes permisos para acceder a esta ruta' });

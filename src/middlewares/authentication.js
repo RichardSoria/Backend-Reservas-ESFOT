@@ -4,18 +4,18 @@ import Docente from '../models/Docente.js';
 import Estudiante from '../models/Estudiante.js';
 
 const verifyAuth = async (req, reply) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return reply.code(401).send({ message: 'Se debe proporcionar un token' });
+
+    const token = req.cookies.tokenJWT;
+
+    if (!token) {
+        return reply.code(401).send({ message: 'No se encontró el token de autenticación' });
     }
 
     try {
-        const token = authHeader.split(' ')[1];
 
         const { id, rol } = jwt.verify(token, req.server.config.JWT_SECRET);
 
         if (rol === 'Admin') {
-            req.adminBDD = await Admin.findById(id).select('-password -__v');
         } else if (rol === 'Docente') {
             req.docenteBDD = await Docente.findById(id).select('-password -__v');
         } else if (rol === 'Estudiante') {

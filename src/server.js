@@ -14,7 +14,9 @@ import connectDB from './database.js';
 import cloudinary from 'cloudinary';
 import fastifyMultipart from 'fastify-multipart';
 import swagger from '@fastify/swagger';
+import fastifyCookie from '@fastify/cookie';
 import swaggerUI from '@fastify/swagger-ui';
+import verifyAuth from "./middlewares/authentication.js";
 
 
 // Configurar AJV con `errorMessage`
@@ -39,6 +41,10 @@ const options = {
 
 // Registra el plugin @fastify/env
 await fastify.register(fastifyEnv, options);
+
+await fastify.register(fastifyCookie, {
+  secret: fastify.config.COOKIE_SECRET,
+})
 
 // Registrar el plugin Multipart con validación para imágenes
 await fastify.register(fastifyMultipart, {
@@ -105,9 +111,10 @@ await fastify.register(swaggerUI, {
   transformStaticCSP: (header) => header,
 });
 
+
 await fastify.register(cors, {
-  origin: 'http://localhost:5000', // tu frontend
-  credentials: true // si usas cookies o autenticación
+  origin: fastify.config.URL_FRONTEND,
+  credentials: true
 })
 
 // Registrar rutas
@@ -117,6 +124,11 @@ await fastify.register(estudianteRoutes, { prefix: "/api/estudiante" });
 await fastify.register(aulaRoutes, { prefix: "/api/aula" });
 await fastify.register(laboratorioRoutes, { prefix: "/api/laboratorio" })
 await fastify.register(reservaRoutes, { prefix: "/api/reserva" });
+
+// Ruta para cerrar sesión
+fastify.post('/logout', { preHandler: verifyAuth }, async (req, reply) => {
+  reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada' });
+});
 
 // Manejar rutas no encontradas
 fastify.setNotFoundHandler((request, reply) => { reply.status(404).send({ error: 'Ruta no encontrada' });});

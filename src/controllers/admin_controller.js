@@ -308,7 +308,7 @@ const recoverPassword = async (req, reply) => {
 
         const resetTokenExpire = moment(adminBDD.resetTokenExpire).tz("America/Guayaquil").format("HH:mm:ss");
 
-        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, adminBDD.rol, resetTokenExpire);
+        sendMailRecoverPassword(email, token, adminBDD.name, adminBDD.lastName, resetTokenExpire);
 
         return reply.code(200).send({
             message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
@@ -370,7 +370,7 @@ const sendRecoverPassword = async (req, reply) => {
         // Guardar en la base de datos
         await adminBDD.save();
         // Enviar correo con la nueva contraseña
-        sendMailNewPassword(adminBDD.email, newPassword, adminBDD.name, adminBDD.lastName, adminBDD.rol);
+        sendMailNewPassword(adminBDD.email, newPassword, adminBDD.name, adminBDD.lastName);
         return reply.code(200).send({ message: "Contraseña de recuperación enviada." });
 
     } catch (error) {

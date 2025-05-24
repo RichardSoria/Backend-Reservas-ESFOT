@@ -1,29 +1,32 @@
 import Fastify from 'fastify';
 import fastifyEnv from '@fastify/env';
+import fastifyCookie from '@fastify/cookie';
+import fastifyMultipart from 'fastify-multipart';
+import fastifyJWT from '@fastify/jwt';
 import cors from '@fastify/cors';
+import swagger from '@fastify/swagger';
+import swaggerUI from '@fastify/swagger-ui';
 import Ajv from 'ajv';
-import addErrors from "ajv-errors";
+import addErrors from 'ajv-errors';
+import cloudinary from 'cloudinary';
+
 import { envSchema } from './config/envSchema.js';
+import connectDB from './database.js';
+import verifyAuth from "./middlewares/authentication.js";
+
+// Rutas
 import adminRoutes from "./routes/admin_routes.js";
 import docenteRoutes from "./routes/docente_routes.js";
 import estudianteRoutes from "./routes/estudiante_routes.js";
 import laboratorioRoutes from './routes/laboratorio_routes.js';
 import aulaRoutes from './routes/aula_routes.js';
 import reservaRoutes from './routes/reserva_routes.js';
-import connectDB from './database.js';
-import cloudinary from 'cloudinary';
-import fastifyMultipart from 'fastify-multipart';
-import swagger from '@fastify/swagger';
-import fastifyCookie from '@fastify/cookie';
-import swaggerUI from '@fastify/swagger-ui';
-import verifyAuth from "./middlewares/authentication.js";
 
-
-// Configurar AJV con `errorMessage`
+// AJV config
 const ajv = new Ajv({ allErrors: true, strict: false });
 addErrors(ajv);
 
-// Crear la instancia de Fastify
+// Crear instancia Fastify
 const fastify = Fastify({
   logger: true,
   ajv: {
@@ -32,55 +35,35 @@ const fastify = Fastify({
   }
 });
 
-// Opciones para cargar variables de entorno
-const options = {
+// Variables de entorno
+await fastify.register(fastifyEnv, {
   confKey: 'config',
   schema: envSchema,
   dotenv: true
-};
+});
 
-// Registra el plugin @fastify/env
-await fastify.register(fastifyEnv, options);
+// Plugins
+await fastify.register(fastifyCookie, { secret: fastify.config.COOKIE_SECRET });
 
-await fastify.register(fastifyCookie, {
-  secret: fastify.config.COOKIE_SECRET,
-})
+await fastify.register(cors, {
+  origin: fastify.config.URL_FRONTEND,
+  credentials: true
+});
 
-// Registrar el plugin Multipart con validación para imágenes
+await fastify.register(fastifyJWT, { secret: fastify.config.JWT_SECRET });
+
 await fastify.register(fastifyMultipart, {
-  addToBody: true, // Para agregar los archivos al body
-  limits: {
-    fileSize: 5 * 1024 * 1024 // Limitar tamaño de archivo a 5MB
-  },
+  addToBody: true,
+  limits: { fileSize: 5 * 1024 * 1024 },
   onFile: (field, file) => {
-    // Validar el tipo de archivo
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png']; // Formatos permitidos
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new Error('Tipo de archivo no permitido. Solo se permiten imágenes JPG, JPEG o PNG');
+      throw new Error('Tipo de archivo no permitido. Solo JPG, JPEG o PNG');
     }
   }
 });
 
-// Configurar Cloudinary
-cloudinary.config({
-  cloud_name: fastify.config.CLOUDINARY_CLOUD_NAME,
-  api_key: fastify.config.CLOUDINARY_API_KEY,
-  api_secret: fastify.config.CLOUDINARY_API_SECRET
-});
-
-// Mostrar variables de entorno
-console.log(`Variables de entorno cargadas:`);
-console.log(fastify.config);
-
-// Conectar a la base de datos
-await connectDB(fastify);
-
-// Ruta principal
-fastify.get('/', async (req, reply) => {
-  return { message: 'Servidor en ejecución', port: fastify.config.PORT };
-});
-
-// Registrar el plugin de Swagger
+// Swagger
 await fastify.register(swagger, {
   openapi: {
     info: {
@@ -93,45 +76,60 @@ await fastify.register(swagger, {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-        },
-      },
+        }
+      }
     },
-    security: [{ bearerAuth: [] }],
-  },
+    security: [{ bearerAuth: [] }]
+  }
 });
 
-// Swagger UI
 await fastify.register(swaggerUI, {
   routePrefix: '/api/docs',
-  uiConfig: {
-    docExpansion: 'list',
-    deepLinking: true,
-  },
+  uiConfig: { docExpansion: 'list', deepLinking: true },
   staticCSP: true,
-  transformStaticCSP: (header) => header,
+  transformStaticCSP: (header) => header
 });
 
+// Cloudinary
+cloudinary.config({
+  cloud_name: fastify.config.CLOUDINARY_CLOUD_NAME,
+  api_key: fastify.config.CLOUDINARY_API_KEY,
+  api_secret: fastify.config.CLOUDINARY_API_SECRET
+});
 
-await fastify.register(cors, {
-  origin: fastify.config.URL_FRONTEND,
-  credentials: true
-})
+// Conexión DB
+await connectDB(fastify);
 
-// Registrar rutas
+// Rutas base
+fastify.get('/', async () => ({ message: 'Servidor en ejecución', port: fastify.config.PORT }));
+
+fastify.get('/api/auth/status', async (req, reply) => {
+  const { valid, value } = req.unsignCookie(req.cookies.tokenJWT);
+  if (!valid) return reply.send({ authenticated: false });
+
+  try {
+    fastify.jwt.verify(value);
+    return reply.send({ authenticated: true });
+  } catch {
+    return reply.send({ authenticated: false });
+  }
+});
+
+fastify.post('/api/logout', { preHandler: verifyAuth }, async (req, reply) => {
+  reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada' });
+});
+
+// Rutas del sistema
 await fastify.register(adminRoutes, { prefix: "/api/admin" });
 await fastify.register(docenteRoutes, { prefix: "/api/docente" });
 await fastify.register(estudianteRoutes, { prefix: "/api/estudiante" });
 await fastify.register(aulaRoutes, { prefix: "/api/aula" });
-await fastify.register(laboratorioRoutes, { prefix: "/api/laboratorio" })
+await fastify.register(laboratorioRoutes, { prefix: "/api/laboratorio" });
 await fastify.register(reservaRoutes, { prefix: "/api/reserva" });
 
-// Ruta para cerrar sesión
-fastify.post('/logout', { preHandler: verifyAuth }, async (req, reply) => {
-  reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada' });
+// 404 personalizado
+fastify.setNotFoundHandler((req, reply) => {
+  reply.status(404).send({ error: 'Ruta no encontrada' });
 });
 
-// Manejar rutas no encontradas
-fastify.setNotFoundHandler((request, reply) => { reply.status(404).send({ error: 'Ruta no encontrada' });});
-
-// Exportar la instancia de Fastify
 export default fastify;

@@ -16,6 +16,7 @@ const verifyAuth = async (req, reply) => {
         const { id, rol } = jwt.verify(token, req.server.config.JWT_SECRET);
 
         if (rol === 'Admin') {
+            req.adminBDD = await Admin.findById(id).select('-password -__v');
         } else if (rol === 'Docente') {
             req.docenteBDD = await Docente.findById(id).select('-password -__v');
         } else if (rol === 'Estudiante') {

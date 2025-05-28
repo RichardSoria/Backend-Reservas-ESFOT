@@ -101,15 +101,14 @@ cloudinary.config({
 await connectDB(fastify);
 
 // Rutas base
-fastify.get('/', async () => ({ message: 'Servidor en ejecución', port: fastify.config.PORT }));
-
 fastify.get('/api/auth/status', async (req, reply) => {
   const { valid, value } = req.unsignCookie(req.cookies.tokenJWT);
   if (!valid) return reply.send({ authenticated: false });
 
   try {
-    fastify.jwt.verify(value);
-    return reply.send({ authenticated: true });
+    const payload = fastify.jwt.verify(value);
+    // payload tiene el id, rol, etc.
+    return reply.send({ authenticated: true, user: payload });
   } catch {
     return reply.send({ authenticated: false });
   }

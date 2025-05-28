@@ -108,7 +108,7 @@ const sendMailRecoverPassword = async (email, token, name, lastName, resetTokenD
             html: `
             <p>Hola <strong>${name} ${lastName}</strong>,</p>
             <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
-            <a href="${process.env.URL_FRONTEND}/enviar-contraseña-recuperación/${token}">Restablecer contraseña</a>
+            <a href="${process.env.URL_FRONTEND}/enviar-contrasena-recuperacion/${token}">Restablecer contraseña</a>
             <p>Este enlace es válido hasta las ${resetTokenDate}</p>
             <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
             <p>Saludos,<br/>Equipo de soporte.</p>

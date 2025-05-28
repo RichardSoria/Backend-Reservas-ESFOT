@@ -53,16 +53,19 @@ const loginEstudiante = async (req, reply) => {
             await estudianteBDD.resetLoginAttempts();
             await estudianteBDD.updateLastLogin();
 
-            const lastLoginLocal = estudianteBDD.lastLogin
-                ? moment(estudianteBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
-                : null;
+            const tokenJWT = generateToken(estudianteBDD._id, estudianteBDD.rol, estudianteBDD.name, estudianteBDD.lastName, req.server);
 
-            const tokenJWT = generateToken(estudianteBDD._id, estudianteBDD.rol, req.server);
-
-            return reply.status(200).send({
-                tokenJWT,
-                lastLoginLocal
-            });
+            return reply
+                .setCookie('tokenJWT', tokenJWT, {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: 'Strict',
+                    path: '/',
+                    maxAge: 60 * 60 * 24,
+                    signed: true
+                })
+                .code(200)
+                .send({ message: 'Inicio de sesión exitoso' });
         } else {
             return reply.status(401).json({ message: "La cuenta está deshabilitada" });
         }

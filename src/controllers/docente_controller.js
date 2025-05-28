@@ -52,16 +52,19 @@ const loginDocente = async (req, reply) => {
             await docenteBDD.resetLoginAttempts();
             await docenteBDD.updateLastLogin();
 
-            const lastLoginLocal = docenteBDD.lastLogin
-                ? moment.utc(docenteBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
-                : null;
+            const tokenJWT = generateToken(docenteBDD._id, docenteBDD.rol, docenteBDD.name, docenteBDD.lastName, req.server);
 
-            const tokenJWT = generateToken(docenteBDD._id, docenteBDD.rol, req.server);
-
-            return reply.status(200).send({
-                tokenJWT,
-                lastLoginLocal
-            });
+            return reply
+                .setCookie('tokenJWT', tokenJWT, {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: 'Strict',
+                    path: '/',
+                    maxAge: 60 * 60 * 24,
+                    signed: true
+                })
+                .code(200)
+                .send({ message: 'Inicio de sesión exitoso' });
         } else {
             return reply.code(400).send({ message: 'La cuenta está deshabilitada' });
         }

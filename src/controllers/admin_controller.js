@@ -52,13 +52,10 @@ const loginAdmin = async (req, reply) => {
             await adminBDD.resetLoginAttempts();
             await adminBDD.updateLastLogin();
 
-            const lastLoginLocal = adminBDD.lastLogin
-                ? moment.utc(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
-                : null;
 
-            const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, req.server);
+            const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, adminBDD.name, adminBDD.lastName, req.server);
 
-            reply
+            return reply
                 .setCookie('tokenJWT', tokenJWT, {
                     httpOnly: true,
                     secure: false,

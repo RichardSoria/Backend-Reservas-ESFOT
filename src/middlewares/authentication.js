@@ -4,15 +4,13 @@ import Docente from '../models/Docente.js';
 import Estudiante from '../models/Estudiante.js';
 
 const verifyAuth = async (req, reply) => {
+    const { valid, value: token } = req.unsignCookie(req.cookies.tokenJWT || '');
 
-    const token = req.cookies.tokenJWT;
-
-    if (!token) {
-        return reply.code(401).send({ message: 'No se encontró el token de autenticación' });
+    if (!valid || !token) {
+        return reply.code(401).send({ message: 'Token de autenticación inválido o ausente' });
     }
 
     try {
-
         const { id, rol } = jwt.verify(token, req.server.config.JWT_SECRET);
 
         if (rol === 'Admin') {
@@ -22,7 +20,7 @@ const verifyAuth = async (req, reply) => {
         } else if (rol === 'Estudiante') {
             req.estudianteBDD = await Estudiante.findById(id).select('-password -__v');
         } else {
-            return reply.code(401).send({ message: 'No tienes permisos para acceder a esta ruta' });
+            return reply.code(401).send({ message: 'Rol no autorizado' });
         }
     } catch (error) {
         return reply.code(401).send({ message: 'Token inválido' });

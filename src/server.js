@@ -49,7 +49,7 @@ await fastify.register(cors, {
   origin: fastify.config.URL_FRONTEND,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, 
+  credentials: true,
 });
 
 await fastify.register(fastifyJWT, { secret: fastify.config.JWT_SECRET });
@@ -104,17 +104,24 @@ await connectDB(fastify);
 
 // Rutas base
 fastify.get('/api/auth/status', async (req, reply) => {
+  // Verificar si existe la cookie firmada (ejemplo: tokenJWT)
+  if (!req.unsignCookie || !req.cookies.tokenJWT) {
+    return reply.send({ authenticated: false });
+  }
+
   const { valid, value } = req.unsignCookie(req.cookies.tokenJWT);
-  if (!valid) return reply.send({ authenticated: false });
+
+  if (!valid) {
+    return reply.send({ authenticated: false });
+  }
 
   try {
     const payload = fastify.jwt.verify(value);
-    // payload tiene el id, rol, etc.
     return reply.send({ authenticated: true, user: payload });
-  } catch {
+  } catch (error) {
     return reply.send({ authenticated: false });
   }
-});
+})
 
 fastify.post('/api/logout', { preHandler: verifyAuth }, async (req, reply) => {
   reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada' });

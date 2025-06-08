@@ -61,7 +61,7 @@ const loginAdmin = async (req, reply) => {
                     secure: false,
                     sameSite: 'Strict',
                     path: '/',
-                    maxAge: 60 * 60 * 24, 
+                    maxAge: 60 * 60 * 24,
                     signed: true
                 })
                 .code(200)
@@ -439,7 +439,12 @@ const getAdminById = async (req, reply) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
-        const adminBDD = await Admin.findById(id).select('-__v -updatedAt -password');
+        const adminBDD = await Admin.findById(id)
+            .select('-__v -updatedAt -password')
+            .populate('createFor', 'name lastName')
+            .populate('updateFor', 'name lastName')
+            .populate('enableFor', 'name lastName')
+            .populate('disableFor', 'name lastName');
         if (!adminBDD) {
             return reply.code(404).send({ message: "El administrador no existe" });
         }

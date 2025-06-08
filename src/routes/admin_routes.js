@@ -13,6 +13,6 @@ export default async function adminRoutes(fastify) {
     fastify.post("/send-recover-password/:token", sendRecoverPassword);
     fastify.put("/update-password", { preHandler: verifyAuth, schema: updatePasswordSchema }, updatePassword);
     fastify.get("/admins", { preHandler: verifyAuth}, getAllAdmins);
-    fastify.get("/admin/:id", { preHandler: verifyAuth}, getAdminById);
+    fastify.get("/admins/:id", { preHandler: verifyAuth}, getAdminById);
     fastify.get("/profile", { preHandler: verifyAuth }, getAdminProfile);
 }

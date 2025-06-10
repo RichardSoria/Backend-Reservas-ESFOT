@@ -14,6 +14,6 @@ export default async function estudianteRoutes(fastify) {
     fastify.post('/send-recover-password/:token', sendRecoverPassword);
     fastify.put('/update-password', { preHandler: verifyAuth, schema: updatePasswordSchema }, updatePassword);
     fastify.get('/estudiantes', { preHandler: verifyAuth }, getAllEstudiantes);
-    fastify.get('/estudiante/:id', { preHandler: verifyAuth }, getEstudianteById);
+    fastify.get('/estudiantes/:id', { preHandler: verifyAuth }, getEstudianteById);
     fastify.get('/profile', { preHandler: verifyAuth }, getEstudianteProfile);
 }

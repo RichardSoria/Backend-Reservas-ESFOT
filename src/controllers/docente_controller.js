@@ -111,6 +111,10 @@ const registerDocente = async (req, reply) => {
             return reply.code(400).send({ message: 'El teléfono ya está registrado' });
         }
 
+        // Validar si la carrera es válida
+        if (career === 'No pertenece a ninguna carrera dentro de la facultad') {
+            otherFaculty = null; 
+        } 
         // Crear contraseña aleatoria
         const password = Math.random().toString(36).substring(2);
 

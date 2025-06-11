@@ -72,7 +72,7 @@ const docenteSchema = new mongoose.Schema({
     },
     otherFaculty: {
         type: String,
-        default: null,
+        default: 'ESFOT',
         maxlength: [50, 'La facultad no puede tener más de 50 caracteres']
     },
     numberReservation: {

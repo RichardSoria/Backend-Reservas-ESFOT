@@ -113,8 +113,8 @@ const registerDocente = async (req, reply) => {
 
         // Validar si la carrera es válida
         if (career === 'No pertenece a ninguna carrera dentro de la facultad') {
-            otherFaculty = null; 
-        } 
+            otherFaculty = null;
+        }
         // Crear contraseña aleatoria
         const password = Math.random().toString(36).substring(2);
 
@@ -486,7 +486,12 @@ const getDocenteById = async (req, reply) => {
         };
 
         // Buscar el docente en la base de datos
-        const docenteBDD = await Docente.findById(id).select('-__v -updatedAt -createdAt');
+        const docenteBDD = await Docente.findById(id)
+            .select('-__v -updatedAt -password')
+            .populate('createFor', 'name lastName')
+            .populate('updateFor', 'name lastName')
+            .populate('enableFor', 'name lastName')
+            .populate('disableFor', 'name lastName');
 
         // Validar si el docente existe
         if (!docenteBDD) {

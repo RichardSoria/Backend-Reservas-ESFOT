@@ -73,7 +73,7 @@ const updateAula = async (req, reply) => {
         aulaBDD.size = size || aulaBDD.size;
         aulaBDD.image = image || aulaBDD.image;
         aulaBDD.updatedDate = Date.now();
-        aulaBDD.updatedBy = adminLogged._id;
+        aulaBDD.updateBy = adminLogged._id;
 
         await aulaBDD.save();
         return reply.code(200).send({ message: "Aula actualizada con éxito" });
@@ -167,8 +167,15 @@ const disableAula = async (req, reply) => {
 // Método para obtener todas las aulas
 const getAllAulas = async (req, reply) => {
     try {
+
+        const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
+
+        if (!userLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
+
         const aulas = await Aula.find().select('-__v')
-        return reply.code(200).send({ aulas });
+        return reply.code(200).send(aulas);
 
     } catch (error) {
         console.error("Error al obtener las aulas:", error);
@@ -182,18 +189,29 @@ const getAulaById = async (req, reply) => {
     try {
         const { id } = req.params;
 
+        const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
+
+        if (!userLogged) {
+            return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
+        }
+
         // Validación del ID del aula
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "ID de aula inválido" });
         }
 
         // Verificación de la existencia del aula
-        const aulaBDD = await Aula.findById(id).select('-__v');
+        const aulaBDD = await Aula.findById(id)
+            .select('-__v')
+            .populate('createBy', 'name lastName')
+            .populate('updateBy', 'name lastName')
+            .populate('enableBy', 'name lastName')
+            .populate('disableBy', 'name lastName');
         if (!aulaBDD) {
             return reply.code(404).send({ message: "El aula no existe" });
         }
 
-        return reply.code(200).send({ aula: aulaBDD });
+        return reply.code(200).send(aulaBDD);
 
     } catch (error) {
         console.error("Error al obtener el aula:", error);

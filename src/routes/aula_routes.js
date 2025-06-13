@@ -8,5 +8,5 @@ export default async function aulaRoutes(fastify) {
     fastify.put('/enable/:id', { preHandler: verifyAuth }, enableAula);
     fastify.put('/disable/:id', { preHandler: verifyAuth }, disableAula);
     fastify.get('/aulas', { preHandler: verifyAuth }, getAllAulas);
-    fastify.get('/aula/:id', { preHandler: verifyAuth }, getAulaById);
+    fastify.get('/aulas/:id', { preHandler: verifyAuth }, getAulaById);
 }

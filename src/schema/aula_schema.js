@@ -1,7 +1,7 @@
 export const createAulaSchema = {
     body: {
         type: 'object',
-        required: ['codigo','name','description','capacity','size','image'],
+        required: ['codigo','name','description','capacity','size'],
         properties: {
             codigo: {
                 type: 'string',
@@ -39,7 +39,7 @@ export const createAulaSchema = {
             },
             size: {
                 type: 'string',
-                enum: ['pequeño', 'mediano', 'grande'],
+                enum: ['Pequeño', 'Mediano', 'Grande'],
                 errorMessage: {
                     enum: 'El tamaño debe ser pequeño, mediano o grande'
                 }
@@ -96,7 +96,7 @@ export const updateAulaSchema = {
             },
             size: {
                 type: 'string',
-                enum: ['pequeño', 'mediano', 'grande'],
+                enum: ['Pequeño', 'Mediano', 'Grande'],
                 errorMessage: {
                     enum: 'El tamaño debe ser pequeño, mediano o grande'
                 }

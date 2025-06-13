@@ -1,5 +1,5 @@
 import { loginEstudiante, registerEstudiante, updateEstudiante, enableEstudiante, disableEstudiante, recoverPassword, verifyToken, sendRecoverPassword, updatePassword, getAllEstudiantes, getEstudianteById, getEstudianteProfile } from '../controllers/estudiante_controller.js';
-import { loginEstudianteSchema, registerEstudianteSchema, updateEstudianteSchema, recoverPasswordSchema, updatePasswordSchema } from '../schema/estudiante_schema.js';
+import { loginEstudianteSchema, registerEstudianteSchema, updateEstudianteSchema, recoverPasswordSchema, updatePasswordSchema } from '../schema/estudiante_Schema.js';
 import verifyAuth from "../middlewares/authentication.js";
 
 

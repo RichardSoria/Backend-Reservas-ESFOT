@@ -8,5 +8,5 @@ export default async function laboratorioRoutes(fastify) {
     fastify.put('/enable/:id', { preHandler: verifyAuth }, enableLaboratorio);
     fastify.put('/disable/:id', { preHandler: verifyAuth }, disableLaboratorio);
     fastify.get('/laboratorios', { preHandler: verifyAuth }, getAllLaboratorios);
-    fastify.get('/laboratorio/:id', { preHandler: verifyAuth }, getLaboratorioById);
+    fastify.get('/laboratorios/:id', { preHandler: verifyAuth }, getLaboratorioById);
 }

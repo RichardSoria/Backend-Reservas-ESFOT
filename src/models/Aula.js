@@ -30,17 +30,13 @@ const aulaSchema = new mongoose.Schema({
         type: String,
         required: [true, 'El tamaño es requerido'],
         enum: {
-            values: ['pequeño', 'mediano', 'grande'],
+            values: ['Pequeño', 'Mediano', 'Grande'],
             message: 'El tamaño debe ser pequeño, mediano o grande'
         }
     },
     numberReservations: {
         type: Number,
         default: 0
-    },
-    image: {
-        type: String,
-        required: [true, 'La imagen es requerida'],
     },
     status: {
         type: Boolean,

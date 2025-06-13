@@ -158,7 +158,7 @@ const updateEstudiante = async (req, reply) => {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
 
-        const estudianteBDD = await Admin.findById(id).select('cedula name lastName email phone updatedDate updateFor');
+        const estudianteBDD = await Estudiante.findById(id).select('cedula name lastName email phone updatedDate updateFor');
 
         // Validar si el estudiante existe
         if (!estudianteBDD) {
@@ -203,7 +203,7 @@ const updateEstudiante = async (req, reply) => {
         estudianteBDD.career = req.body.career || estudianteBDD.career;
         estudianteBDD.lastPeriod = req.body.lastPeriod || estudianteBDD.lastPeriod;
         estudianteBDD.updateFor = adminLogged._id;
-        estudianteBDD.updateDate = Date.now();
+        estudianteBDD.updatedDate = Date.now();
         await estudianteBDD.save();
 
         // Enviar correo al estudiante
@@ -460,7 +460,12 @@ const getEstudianteById = async (req, reply) => {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "El ID no es válido" });
         }
-        const estudianteBDD = await Estudiante.findById(id).select('-__v -password');
+        const estudianteBDD = await Estudiante.findById(id)
+            .select('-__v -updatedAt -password')
+            .populate('createFor', 'name lastName')
+            .populate('updateFor', 'name lastName')
+            .populate('enableFor', 'name lastName')
+            .populate('disableFor', 'name lastName');
         if (!estudianteBDD) {
             return reply.code(404).send({ message: "El estudiante no existe" });
         }

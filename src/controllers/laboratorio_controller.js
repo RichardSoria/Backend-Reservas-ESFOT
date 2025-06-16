@@ -209,7 +209,7 @@ const disableLaboratorio = async (req, reply) => {
 const getAllLaboratorios = async (req, reply) => {
     try {
         const laboratoriosBDD = await Laboratorio.find().populate('createBy', 'name').populate('updateBy', 'name').populate('enableBy', 'name').populate('disableBy', 'name');
-        return reply.code(200).send({ message: "Lista de laboratorios", data: laboratoriosBDD });
+        return reply.code(200).send(laboratoriosBDD );
     } catch (error) {
         console.error("Error al obtener los laboratorios:", error);
         return reply.code(500).send({ message: "Error al obtener los laboratorios" });
@@ -232,7 +232,7 @@ const getLaboratorioById = async (req, reply) => {
             return reply.code(404).send({ message: "El laboratorio no existe" });
         }
 
-        return reply.code(200).send({ message: "Laboratorio encontrado", data: laboratorioBDD });
+        return reply.code(200).send(laboratorioBDD);
 
     } catch (error) {
         console.error("Error al obtener el laboratorio:", error);

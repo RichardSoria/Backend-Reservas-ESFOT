@@ -43,7 +43,7 @@ export const registerAdminSchema = {
             name: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de nombre es obligatorio'
@@ -52,7 +52,7 @@ export const registerAdminSchema = {
             lastName: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de apellido es obligatorio'
@@ -100,7 +100,7 @@ export const updateAdminSchema = {
             name: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de nombre es obligatorio'
@@ -109,7 +109,7 @@ export const updateAdminSchema = {
             lastName: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de apellido es obligatorio'

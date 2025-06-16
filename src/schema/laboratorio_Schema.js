@@ -1,7 +1,7 @@
 export const createLaboratorioSchema = {
     body: {
         type: 'object',
-        required: ['codigo', 'name', 'description', 'specialty', 'capacity', 'size', 'image'],
+        required: ['codigo', 'name', 'description', 'capacity', 'equipmentPC', 'equipmentProyector', 'equipmentInteractiveScreen'],
         properties: {
             codigo: {
                 type: 'string',
@@ -15,34 +15,23 @@ export const createLaboratorioSchema = {
             name: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                maxLength: 20,
+                pattern: '^[\\p{L}0-9\\s-]+$',
                 errorMessage: {
-                    pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de nombre es obligatorio'
+                    pattern: 'El nombre solo puede contener letras, números y espacios',
+                    minLength: 'El campo de nombre es obligatorio',
+                    maxLength: 'El nombre no puede tener más de 20 caracteres',
                 }
             },
             description: {
                 type: 'string',
                 minLength: 1,
+                maxLength: 100,
                 pattern: '^[a-zA-Z0-9\\s.,;:-]{1,100}$',
                 errorMessage: {
-                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 100 caracteres',
-                    minLength: 'El campo de descripción es obligatorio'
-                }
-            },
-            specialty: {
-                type: 'string',
-                enum: [
-                    'TICs',
-                    'Desarrollo de Software',
-                    'Redes y Telecomunicaciones',
-                    'Electromecánica',
-                    'Agua y Saneamiento Ambiental',
-                    'Procesamiento de Alimentos',
-                    'Procesamiento Industrial de la Madera'
-                ],
-                errorMessage: {
-                    enum: 'La especialidad debe ser una de las siguientes: TICs, Desarrollo de Software, Redes y Telecomunicaciones, Electromecánica, Agua y Saneamiento Ambiental, Procesamiento de Alimentos, Procesamiento Industrial de la Madera'
+                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-)',
+                    minLength: 'El campo de descripción es obligatorio',
+                    maxLength: 'La descripción no puede tener más de 100 caracteres',
                 }
             },
             capacity: {
@@ -52,22 +41,27 @@ export const createLaboratorioSchema = {
                     minimum: 'La capacidad debe ser al menos 1'
                 }
             },
-            size: {
-                type: 'string',
-                enum: ['pequeño', 'mediano', 'grande'],
+            equipmentPC: {
+                type: 'boolean',
+                default: null,
                 errorMessage: {
-                    enum: 'El tamaño debe ser pequeño, mediano o grande'
+                    type: 'El campo de PC debe ser un booleano'
                 }
             },
-            image: {
-                type: 'string',
-                minLength: 1,
-                format: 'uri',
+            equipmentProyector: {
+                type: 'boolean',
+                default: null,
                 errorMessage: {
-                    minLength: 'El campo de imagen es obligatorio',
-                    format: 'La imagen debe ser una URL válida'
+                    type: 'El campo de proyector debe ser un booleano'
                 }
-            }
+            },
+            equipmentInteractiveScreen: {
+                type: 'boolean',
+                default: null,
+                errorMessage: {
+                    type: 'El campo de pantalla interactiva debe ser un booleano'
+                }
+            },
         },
         additionalProperties: false
     }
@@ -89,34 +83,23 @@ export const updateLaboratorioSchema = {
             name: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                maxLength: 20,
+                pattern: '^[\\p{L}0-9\\s-]+$',
                 errorMessage: {
-                    pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de nombre es obligatorio'
+                    pattern: 'El nombre solo puede contener letras, números y espacios',
+                    minLength: 'El campo de nombre es obligatorio',
+                    maxLength: 'El nombre no puede tener más de 20 caracteres',
                 }
             },
             description: {
                 type: 'string',
                 minLength: 1,
+                maxLength: 100,
                 pattern: '^[a-zA-Z0-9\\s.,;:-]{1,100}$',
                 errorMessage: {
-                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 100 caracteres',
-                    minLength: 'El campo de descripción es obligatorio'
-                }
-            },
-            specialty: {
-                type: 'string',
-                enum: [
-                    'TICs',
-                    'Desarrollo de Software',
-                    'Redes y Telecomunicaciones',
-                    'Electromecánica',
-                    'Agua y Saneamiento Ambiental',
-                    'Procesamiento de Alimentos',
-                    'Procesamiento Industrial de la Madera'
-                ],
-                errorMessage: {
-                    enum: 'La especialidad debe ser una de las siguientes: TICs, Desarrollo de Software, Redes y Telecomunicaciones, Electromecánica, Agua y Saneamiento Ambiental, Procesamiento de Alimentos, Procesamiento Industrial de la Madera'
+                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-)',
+                    minLength: 'El campo de descripción es obligatorio',
+                    maxLength: 'La descripción no puede tener más de 100 caracteres',
                 }
             },
             capacity: {
@@ -126,22 +109,27 @@ export const updateLaboratorioSchema = {
                     minimum: 'La capacidad debe ser al menos 1'
                 }
             },
-            size: {
-                type: 'string',
-                enum: ['pequeño', 'mediano', 'grande'],
+            equipmentPC: {
+                type: 'boolean',
+                default: false,
                 errorMessage: {
-                    enum: 'El tamaño debe ser pequeño, mediano o grande'
+                    type: 'El campo de PC debe ser un booleano'
                 }
             },
-            image: {
-                type: 'string',
-                minLength: 1,
-                format: 'uri',
+            equipmentProyector: {
+                type: 'boolean',
+                default: false,
                 errorMessage: {
-                    minLength: 'El campo de imagen es obligatorio',
-                    format: 'La imagen debe ser una URL válida'
+                    type: 'El campo de proyector debe ser un booleano'
                 }
-            }
+            },
+            equipmentInteractiveScreen: {
+                type: 'boolean',
+                default: false,
+                errorMessage: {
+                    type: 'El campo de pantalla interactiva debe ser un booleano'
+                }
+            },
         },
         additionalProperties: false
     }

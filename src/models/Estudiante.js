@@ -69,13 +69,6 @@ const estudianteSchema = new mongoose.Schema({
             'Tecnología Superior en Procesamiento Industrial de la Madera'
         ]
     },
-    lastPeriod: {
-        type: String,
-        required: [true, 'El periodo es requerido'],
-        minlength: [6, 'El periodo debe tener 6 caracteres'],
-        maxlength: [6, 'El periodo no puede tener más de 6 caracteres'],
-        match: [/^\d{4}-(A|B)$/, 'El periodo debe tener el formato YYYY-A o YYYY-B']
-    },
     numberReservation: {
         type: Number,
         default: 0,

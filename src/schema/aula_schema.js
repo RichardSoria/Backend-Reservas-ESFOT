@@ -1,9 +1,9 @@
 export const createAulaSchema = {
     body: {
         type: 'object',
-        required: ['codigo','name','description','capacity','size'],
+        required: ['name', 'description', 'capacity'],
         properties: {
-            codigo: {
+            name: {
                 type: 'string',
                 minLength: 1,
                 pattern: '^E\\d{2}/PB\\d/E\\d{3}$',
@@ -12,15 +12,6 @@ export const createAulaSchema = {
                     pattern: 'El código debe seguir el formato E00/PB0/E000'
                 }
             },
-            name: {
-                type: 'string',
-                minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
-                errorMessage: {
-                    pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de nombre es obligatorio'
-                }
-            },
             description: {
                 type: 'string',
                 minLength: 1,
@@ -37,24 +28,8 @@ export const createAulaSchema = {
                     minimum: 'La capacidad debe ser al menos 1'
                 }
             },
-            size: {
-                type: 'string',
-                enum: ['Pequeño', 'Mediano', 'Grande'],
-                errorMessage: {
-                    enum: 'El tamaño debe ser pequeño, mediano o grande'
-                }
-            },
-            image: {
-                type: 'string',
-                minLength: 1,
-                format: 'uri',
-                errorMessage: {
-                    minLength: 'El campo de imagen es obligatorio',
-                    format: 'La imagen debe ser una URL válida'
-                }
-            }
         },
-        additionalProperties:false
+        additionalProperties: false
     }
 };
 
@@ -62,29 +37,26 @@ export const updateAulaSchema = {
     body: {
         type: 'object',
         properties: {
-            codigo: {
-                type: 'string',
-                pattern: '^E\\d{2}/PB\\d/E\\d{3}$',
-                errorMessage: {
-                    pattern: 'El código debe seguir el formato E00/PB0/E000'
-                }
-            },
             name: {
                 type: 'string',
-                minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                minLength: 12,
+                maxLength: 12,
+                pattern: '^E\\d{2}/PB\\d{1}/E\\d{3}$',
                 errorMessage: {
-                    pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de nombre es obligatorio'
-                }
+                    pattern: 'El nombre debe seguir exactamente el formato E00/PB0/E000',
+                    minLength: 'El campo de nombre debe tener exactamente 12 caracteres',
+                    maxLength: 'El campo de nombre debe tener exactamente 12 caracteres',
+                },
             },
             description: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z0-9\\s.,;:-]{1,100}$',
+                maxLength: 100,
+                pattern: '^[\\p{L}\\p{N}\\s.,;:()¿?¡!-]+$',
                 errorMessage: {
-                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 100 caracteres',
-                    minLength: 'El campo de descripción es obligatorio'
+                    pattern: 'La descripción puede contener letras, números, espacios y algunos caracteres especiales (.,;:()¿?¡!-)',
+                    minLength: 'El campo de descripción es obligatorio',
+                    maxLength: 'La descripción no puede exceder los 100 caracteres'
                 }
             },
             capacity: {
@@ -94,23 +66,7 @@ export const updateAulaSchema = {
                     minimum: 'La capacidad debe ser al menos 1'
                 }
             },
-            size: {
-                type: 'string',
-                enum: ['Pequeño', 'Mediano', 'Grande'],
-                errorMessage: {
-                    enum: 'El tamaño debe ser pequeño, mediano o grande'
-                }
-            },
-            image: {
-                type: 'string',
-                minLength: 1,
-                format: 'uri',
-                errorMessage: {
-                    minLength: 'El campo de imagen es obligatorio',
-                    format: 'La imagen debe ser una URL válida'
-                }
-            }
         },
-        additionalProperties:false
+        additionalProperties: false
     }
 };

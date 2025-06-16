@@ -1,4 +1,4 @@
-import Aula from '../models/aula.js';
+import Aula from '../models/Aula.js';
 import mongoose from 'mongoose';
 
 
@@ -12,10 +12,10 @@ const createAula = async (req, reply) => {
         }
 
         // Desestructuración de los datos del cuerpo de la solicitud
-        const { codigo, name, description, capacity, size, image } = req.body;
+        const { name, description, capacity } = req.body;
 
         // Verificación de la existencia del aula
-        const aulaBDD = await Aula.findOne({ codigo });
+        const aulaBDD = await Aula.findOne({ name });
         if (aulaBDD) {
             return reply.code(400).send({ message: "El aula ya existe" });
         }
@@ -26,7 +26,7 @@ const createAula = async (req, reply) => {
         }
 
         //  Creación de un nuevo aula
-        const newAula = new Aula({ codigo, name, description, capacity, size, image, createBy: adminLogged._id, enableBy: adminLogged._id });
+        const newAula = new Aula({ name, description, capacity, createBy: adminLogged._id, enableBy: adminLogged._id });
         await newAula.save();
         return reply.code(201).send({ message: "Aula creada con éxito" });
 
@@ -43,7 +43,7 @@ const updateAula = async (req, reply) => {
         const adminLogged = req.adminBDD;
 
         // Desestructuración de los datos del cuerpo de la solicitud
-        const { codigo, name, description, capacity, size, image } = req.body;
+        const { name, description, capacity} = req.body;
 
         if (!adminLogged) {
             return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
@@ -55,7 +55,7 @@ const updateAula = async (req, reply) => {
         }
 
         // Verificación de la existencia del aula
-        const aulaBDD = await Aula.findById(id).select('codigo name description capacity size image  updatedBy updatedDate');
+        const aulaBDD = await Aula.findById(id).select('name description capacity updatedBy updatedDate');
         if (!aulaBDD) {
             return reply.code(404).send({ message: "El aula no existe" });
         }
@@ -66,12 +66,9 @@ const updateAula = async (req, reply) => {
         }
 
         // Actualización del aula
-        aulaBDD.codigo = codigo || aulaBDD.codigo;
         aulaBDD.name = name || aulaBDD.name;
         aulaBDD.description = description || aulaBDD.description;
         aulaBDD.capacity = capacity || aulaBDD.capacity;
-        aulaBDD.size = size || aulaBDD.size;
-        aulaBDD.image = image || aulaBDD.image;
         aulaBDD.updatedDate = Date.now();
         aulaBDD.updateBy = adminLogged._id;
 

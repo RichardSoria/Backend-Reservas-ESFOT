@@ -111,10 +111,6 @@ const registerDocente = async (req, reply) => {
             return reply.code(400).send({ message: 'El teléfono ya está registrado' });
         }
 
-        // Validar si la carrera es válida
-        if (career === 'No pertenece a ninguna carrera dentro de la facultad') {
-            otherFaculty = null;
-        }
         // Crear contraseña aleatoria
         const password = Math.random().toString(36).substring(2);
 
@@ -195,15 +191,6 @@ const updateDocente = async (req, reply) => {
             }
         };
 
-        // Si no se está modificando la carrera, no validar "otherFaculty"
-        if (req.body.career && req.body.career === 'No pertenece a ninguna carrera dentro de la facultad' && !req.body.otherFaculty) {
-            return reply.code(400).send({ message: 'El campo "otra facultad" es obligatorio cuando la carrera es "No pertenece a ninguna carrera dentro de la facultad"' });
-        }
-
-        // Si se está modificando la carrera y no es "No pertenece a ninguna carrera dentro de la facultad", limpiar "otherFaculty"
-        if (req.body.career && req.body.career !== 'No pertenece a ninguna carrera dentro de la facultad') {
-            docenteBDD.otherFaculty = null;
-        }
 
         // Validar body vacio dado a que el schema detecto campos no válidos
         if (Object.keys(req.body).length === 0) {

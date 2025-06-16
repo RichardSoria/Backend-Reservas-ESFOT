@@ -6,7 +6,7 @@ const laboratorioSchema = new mongoose.Schema({
         type: String,
         required: [true, 'El código del laboratorio es requerido'],
         unique: true,
-        match: [/^E\d{2}\/PB\d\/E\d{3}$/, 'Formato inválido (ej: E21/PB2/E035)'],
+        match: [/^E\d{2}\/PB\d{1}\/E\d{3}$/, 'El nombre debe seguir el formato E00/PB0/E000'],
         uppercase: true
     },
     name: {
@@ -21,48 +21,19 @@ const laboratorioSchema = new mongoose.Schema({
         trim: true,
         maxlength: [100, 'La descripción no puede tener más de 100 caracteres']
     },
-    specialty: {
-        type: String,
-        required: [true, 'La especialidad es requerida'],
-        enum: [
-            'TICs',
-            'Desarrollo de Software',
-            'Redes y Telecomunicaciones',
-            'Electomecánica',
-            'Agua y Saneamiento Ambiental',
-            'Procesamiento de Alimentos',
-            'Procesamiento Industrial de la Madera',
-        ]},
     equipmentPC: {
         type: Boolean,
+        required: [true, 'El campo de PC es requerido'],
         default: false
     },
     equipmentProyector: {
         type: Boolean,
+        required: [true, 'El campo de proyector es requerido'],
         default: false
     },
     equipmentInteractiveScreen: {
         type: Boolean,
-        default: false
-    },
-    equipamentNetwork: {
-        type: Boolean,
-        default: false
-    },
-    equipamentElectromechanical: {
-        type: Boolean,
-        default: false
-    },
-    equipamentWater: {
-        type: Boolean,
-        default: false
-    },
-    equipamentFood: {
-        type: Boolean,
-        default: false
-    },
-    equipamentWood: {
-        type: Boolean,
+        required: [true, 'El campo de pantalla interactiva es requerido'],
         default: false
     },
     capacity: {
@@ -70,21 +41,9 @@ const laboratorioSchema = new mongoose.Schema({
         required: [true, 'La capacidad es requerida'],
         min: [1, 'La capacidad debe ser al menos 1']
     },
-    size: {
-        type: String,
-        required: [true, 'El tamaño es requerido'],
-        enum: {
-            values: ['pequeño', 'mediano', 'grande'],
-            message: 'El tamaño debe ser pequeño, mediano o grande'
-        }
-    },
     numberReservations: {
         type: Number,
         default: 0
-    },
-    image: {
-        type: String,
-        required: [true, 'La imagen es requerida'],
     },
     status: {
         type: Boolean,

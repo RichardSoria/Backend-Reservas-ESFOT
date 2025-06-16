@@ -1,5 +1,3 @@
-import { type } from "os";
-
 export const loginEstudianteSchema = {
     body: {
         type: 'object',
@@ -31,7 +29,7 @@ export const loginEstudianteSchema = {
 export const registerEstudianteSchema = {
     body: {
         type: 'object',
-        required: ['cedula', 'name', 'lastName', 'email', 'phone', 'career', 'lastPeriod'],
+        required: ['cedula', 'name', 'lastName', 'email', 'phone', 'career'],
         properties: {
             cedula: {
                 type: 'string',
@@ -45,7 +43,7 @@ export const registerEstudianteSchema = {
             name: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',                
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de nombre es obligatorio'
@@ -54,7 +52,7 @@ export const registerEstudianteSchema = {
             lastName: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',                
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de apellido es obligatorio'
@@ -93,17 +91,6 @@ export const registerEstudianteSchema = {
                 errorMessage: {
                     enum: 'La carrera debe ser una de las opciones disponibles'
                 }
-            },
-            lastPeriod: {
-                type: 'string',
-                minLength: 6,
-                maxLength: 6,
-                pattern: '^\\d{4}-(A|B)$',
-                errorMessage: {
-                    minLength: 'El periodo debe tener 6 caracteres',
-                    maxlength: 'El periodo no puede tener más de 6 caracteres',
-                    pattern: 'El periodo debe tener el formato YYYY-A o YYYY-B'
-                }
             }
         }
         ,
@@ -127,7 +114,7 @@ export const updateEstudianteSchema = {
             name: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',                
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de nombre es obligatorio'
@@ -136,7 +123,7 @@ export const updateEstudianteSchema = {
             lastName: {
                 type: 'string',
                 minLength: 1,
-                pattern: '^[a-zA-Z]{1,20}$',
+                pattern: '^[\\p{L}]{1,20}$',                
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
                     minLength: 'El campo de apellido es obligatorio'

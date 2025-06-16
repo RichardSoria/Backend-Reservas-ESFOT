@@ -67,12 +67,13 @@ const docenteSchema = new mongoose.Schema({
             'Tecnología Superior en Redes y Telecomunicaciones',
             'Tecnología Superior en Procesamiento de Alimentos',
             'Tecnología Superior en Procesamiento Industrial de la Madera',
-            'No pertenece a ninguna carrera dentro de la facultad'
+            'Otras facultades/Externos'
         ]
     },
     otherFaculty: {
         type: String,
         default: 'ESFOT',
+        minlength: [1, 'La facultad es requerida'],
         maxlength: [50, 'La facultad no puede tener más de 50 caracteres']
     },
     numberReservation: {

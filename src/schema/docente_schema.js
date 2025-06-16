@@ -46,22 +46,19 @@ export const registerDocenteSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[a-zA-Z]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de nombre es obligatorio',
-                    maxLength: 'El nombre no puede tener más de 20 caracteres'
+                    minLength: 'El campo de nombre es obligatorio'
                 }
             },
             lastName: {
                 type: 'string',
                 minLength: 1,
-                maxLength: 20,
-                pattern: '^[a-zA-Z]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de apellido es obligatorio',
-                    maxLength: 'El apellido no puede tener más de 20 caracteres'
+                    minLength: 'El campo de apellido es obligatorio'
                 }
             },
             email: {
@@ -93,7 +90,7 @@ export const registerDocenteSchema = {
                     'Tecnología Superior en Redes y Telecomunicaciones',
                     'Tecnología Superior en Procesamiento de Alimentos',
                     'Tecnología Superior en Procesamiento Industrial de la Madera',
-                    'No pertenece a ninguna carrera dentro de la facultad'
+                    'Otras facultades/Externos'
                 ],
                 errorMessage: {
                     enum: 'La carrera debe ser una de las opciones disponibles'
@@ -116,7 +113,7 @@ export const registerDocenteSchema = {
             {
                 if: {
                     properties: {
-                        career: { const: 'No pertenece a ninguna carrera dentro de la facultad' }
+                        career: { const: 'Otras facultades/Externos' }
                     }
                 },
                 then: {
@@ -146,22 +143,20 @@ export const updateDocenteSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[a-zA-Z]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de nombre es obligatorio',
-                    maxLength: 'El nombre no puede tener más de 20 caracteres'
+                    minLength: 'El campo de nombre es obligatorio'
                 }
             },
             lastName: {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[a-zA-Z]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras y tener hasta 20 caracteres',
-                    minLength: 'El campo de apellido es obligatorio',
-                    maxLength: 'El apellido no puede tener más de 20 caracteres'
+                    minLength: 'El campo de apellido es obligatorio'
                 }
             },
             email: {
@@ -193,7 +188,7 @@ export const updateDocenteSchema = {
                     'Tecnología Superior en Redes y Telecomunicaciones',
                     'Tecnología Superior en Procesamiento de Alimentos',
                     'Tecnología Superior en Procesamiento Industrial de la Madera',
-                    'No pertenece a ninguna carrera dentro de la facultad'
+                    'Otras facultades/Externos'
                 ],
                 errorMessage: {
                     enum: 'La carrera debe ser una de las opciones disponibles'
@@ -203,7 +198,7 @@ export const updateDocenteSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 50,
-                pattern: '^[a-zA-Z\\s]+$',
+                pattern: '^[\\p{L}\\s]+$',
                 errorMessage: {
                     pattern: 'El campo de otra facultad solo puede contener letras y espacios',
                     minLength: 'El campo de otra facultad es obligatorio',

@@ -1,19 +1,14 @@
+
 import mongoose from "mongoose";
 
 // Esquema del aula
 const aulaSchema = new mongoose.Schema({
-    codigo: {
-        type: String,
-        required: [true, 'El código del aula es requerido'],
-        unique: true,
-        match: [/^E\d{2}\/PB\d\/E\d{3}$/, 'Formato inválido (ej: E21/PB2/E035)'],
-        uppercase: true
-    },
     name: {
         type: String,
-        required: [true, 'El nombre es requerido'],
-        trim: true,
-        maxlength: [20, 'El nombre no puede tener más de 20 caracteres']
+        required: [true, 'El nombre del aula es requerido'],
+        unique: true,
+        match: [/^E\d{2}\/PB\d{1}\/E\d{3}$/, 'El nombre debe seguir el formato E00/PB0/E000'],
+        uppercase: true
     },
     description: {
         type: String,
@@ -25,14 +20,6 @@ const aulaSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'La capacidad es requerida'],
         min: [1, 'La capacidad debe ser al menos 1']
-    },
-    size : {
-        type: String,
-        required: [true, 'El tamaño es requerido'],
-        enum: {
-            values: ['Pequeño', 'Mediano', 'Grande'],
-            message: 'El tamaño debe ser pequeño, mediano o grande'
-        }
     },
     numberReservations: {
         type: Number,

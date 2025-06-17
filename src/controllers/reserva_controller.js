@@ -4,13 +4,16 @@ import mongoose from "mongoose";
 // Método para crear una nueva reserva	
 const createReserva = async (req, reply) => {
     try {
-        const adminLogged = req.adminBDD;
 
-        const userLogged = req.docenteBDD || req.estudianteBDD;
+        const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
+
+        if (!userLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para crear reservas' });
+        }
 
         const { reservationDate, startTime, endTime, placeID, purpose, description } = req.body;
 
-        const userID = userLogged ? userLogged._id : adminLogged._id;
+        const userID = userLogged._id;
 
         if (!mongoose.Types.ObjectId.isValid(userID)) {
             return reply.code(400).send({ message: 'El ID de usuario no es válido' });
@@ -249,7 +252,6 @@ const getReservaById = async (req, reply) => {
         
     }
 }
-
 
 export {
     createReserva,

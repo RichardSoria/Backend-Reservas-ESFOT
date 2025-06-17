@@ -8,6 +8,6 @@ export default async function reservaRoutes(fastify) {
     fastify.post('/approve/:id', { preHandler: verifyAuth }, approveReserva);
     fastify.post('/reject/:id', { preHandler: verifyAuth, schema: rejectReasonSchema }, rejectReserva);
     fastify.post('/cancel/:id', { preHandler: verifyAuth }, cancelReserva);
-    fastify.get('/all', { preHandler: verifyAuth }, getAllReservas);
-    fastify.get('/:id', { preHandler: verifyAuth }, getReservaById);
+    fastify.get('/reservas', { preHandler: verifyAuth }, getAllReservas);
+    fastify.get('/reservas/:id', { preHandler: verifyAuth }, getReservaById);
 }

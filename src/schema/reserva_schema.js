@@ -50,10 +50,10 @@ export const createReservaSchema = {
             description: {
                 type: 'string',
                 minLength: 1,
-                maxLength: 200,
+                pattern: '^[a-zA-Z0-9\\s.,;:-]{1,200}$',
                 errorMessage: {
-                    minLength: 'La descripción es obligatoria',
-                    maxLength: 'La descripción no puede tener más de 200 caracteres'
+                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 200 caracteres',
+                    minLength: 'El campo de descripción es obligatorio'
                 }
             },
             status: {
@@ -91,10 +91,10 @@ export const rejectReasonSchema = {
             rejectReason: {
                 type: 'string',
                 minLength: 1,
-                maxLength: 200,
+                pattern: '^[a-zA-Z0-9\\s.,;:-]{1,200}$',
                 errorMessage: {
-                    minLength: 'El motivo de rechazo es obligatorio',
-                    maxLength: 'El motivo de rechazo no puede tener más de 200 caracteres'
+                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 200 caracteres',
+                    minLength: 'El campo de descripción es obligatorio'
                 }
             }
         }

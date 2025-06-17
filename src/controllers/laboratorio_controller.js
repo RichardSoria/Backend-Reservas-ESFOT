@@ -11,10 +11,10 @@ const createLaboratorio = async (req, reply) => {
         }
 
         // Desestructuración de los datos del cuerpo de la solicitud
-        const { 
-            codigo, 
-            name, 
-            description, 
+        const {
+            codigo,
+            name,
+            description,
             specialty,
             equipmentPC,
             equipmentProyector,
@@ -24,9 +24,9 @@ const createLaboratorio = async (req, reply) => {
             equipamentWater,
             equipamentFood,
             equipamentWood,
-            capacity, 
-            size, 
-            image 
+            capacity,
+            size,
+            image
         } = req.body;
 
         // Verificación de la existencia del laboratorio
@@ -41,10 +41,10 @@ const createLaboratorio = async (req, reply) => {
         }
 
         //  Creación de un nuevo laboratorio
-        const newLaboratorio = new Laboratorio({ 
-            codigo, 
-            name, 
-            description, 
+        const newLaboratorio = new Laboratorio({
+            codigo,
+            name,
+            description,
             specialty,
             equipmentPC,
             equipmentProyector,
@@ -54,11 +54,11 @@ const createLaboratorio = async (req, reply) => {
             equipamentWater,
             equipamentFood,
             equipamentWood,
-            capacity, 
-            size, 
-            image, 
-            createBy: adminLogged._id, 
-            enableBy: adminLogged._id 
+            capacity,
+            size,
+            image,
+            createBy: adminLogged._id,
+            enableBy: adminLogged._id
         });
         await newLaboratorio.save();
         return reply.code(201).send({ message: "Laboratorio creado con éxito" });
@@ -76,10 +76,10 @@ const updateLaboratorio = async (req, reply) => {
         const adminLogged = req.adminBDD;
 
         // Desestructuración de los datos del cuerpo de la solicitud
-        const { 
-            codigo, 
-            name, 
-            description, 
+        const {
+            codigo,
+            name,
+            description,
             specialty,
             equipmentPC,
             equipmentProyector,
@@ -89,9 +89,9 @@ const updateLaboratorio = async (req, reply) => {
             equipamentWater,
             equipamentFood,
             equipamentWood,
-            capacity, 
-            size, 
-            image 
+            capacity,
+            size,
+            image
         } = req.body;
 
         if (!adminLogged) {
@@ -115,10 +115,10 @@ const updateLaboratorio = async (req, reply) => {
         }
 
         // Actualización de los datos del laboratorio
-        const updatedLaboratorio = await Laboratorio.findByIdAndUpdate(id, { 
-            codigo, 
-            name, 
-            description, 
+        const updatedLaboratorio = await Laboratorio.findByIdAndUpdate(id, {
+            codigo,
+            name,
+            description,
             specialty,
             equipmentPC,
             equipmentProyector,
@@ -128,11 +128,11 @@ const updateLaboratorio = async (req, reply) => {
             equipamentWater,
             equipamentFood,
             equipamentWood,
-            capacity, 
-            size, 
-            image, 
-            updatedBy: adminLogged._id, 
-            updatedDate: new Date() 
+            capacity,
+            size,
+            image,
+            updatedBy: adminLogged._id,
+            updatedDate: new Date()
         }, { new: true });
 
         return reply.code(200).send({ message: "Laboratorio actualizado con éxito", data: updatedLaboratorio });
@@ -141,7 +141,7 @@ const updateLaboratorio = async (req, reply) => {
         console.error("Error al actualizar el laboratorio:", error);
         return reply.code(500).send({ message: "Error al actualizar el laboratorio" });
     }
-}   
+}
 
 // Método para habilitar un laboratorio
 const enableLaboratorio = async (req, reply) => {
@@ -209,7 +209,7 @@ const disableLaboratorio = async (req, reply) => {
 const getAllLaboratorios = async (req, reply) => {
     try {
         const laboratoriosBDD = await Laboratorio.find().populate('createBy', 'name').populate('updateBy', 'name').populate('enableBy', 'name').populate('disableBy', 'name');
-        return reply.code(200).send(laboratoriosBDD );
+        return reply.code(200).send(laboratoriosBDD);
     } catch (error) {
         console.error("Error al obtener los laboratorios:", error);
         return reply.code(500).send({ message: "Error al obtener los laboratorios" });
@@ -227,7 +227,12 @@ const getLaboratorioById = async (req, reply) => {
         }
 
         // Verificación de la existencia del laboratorio
-        const laboratorioBDD = await Laboratorio.findById(id).populate('createBy', 'name').populate('updateBy', 'name').populate('enableBy', 'name').populate('disableBy', 'name');
+        const laboratorioBDD = await Laboratorio.findById(id)
+            .select('-__v')
+            .populate('createBy', 'name lastName')
+            .populate('updateBy', 'name lastName')
+            .populate('enableBy', 'name lastName')
+            .populate('disableBy', 'name lastName');
         if (!laboratorioBDD) {
             return reply.code(404).send({ message: "El laboratorio no existe" });
         }

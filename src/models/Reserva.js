@@ -6,7 +6,7 @@ const reservaSchema = new mongoose.Schema({
     userID: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, "El ID del usuario es requerido"],
-        refPath: "userType",
+        refPath: 'userRol',
     },
     userRol: {
         type: String,
@@ -15,7 +15,8 @@ const reservaSchema = new mongoose.Schema({
     },
     userAuthorizationID: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "El ID de autorización es requerido"],
+        ref: 'Admin',
+        default: null
     },
     placeID: {
         type: mongoose.Schema.Types.ObjectId,

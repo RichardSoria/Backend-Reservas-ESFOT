@@ -53,7 +53,7 @@ const loginAdmin = async (req, reply) => {
             await adminBDD.updateLastLogin();
 
 
-            const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, adminBDD.name, adminBDD.lastName, req.server);
+            const tokenJWT = generateToken(adminBDD._id, adminBDD.rol, req.server);
 
             return reply
                 .setCookie('tokenJWT', tokenJWT, {
@@ -466,14 +466,13 @@ const getAdminProfile = async (req, reply) => {
         }
 
         return reply.code(200).send({
-            id: adminBDD._id,
             name: adminBDD.name,
             lastName: adminBDD.lastName,
+            cedula: adminBDD.cedula,
             email: adminBDD.email,
             phone: adminBDD.phone,
             rol: adminBDD.rol,
             status: adminBDD.status,
-            lastLoginLocal: moment(adminBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
         });
     } catch (error) {
         console.error("Error al obtener perfil de administrador:", error);

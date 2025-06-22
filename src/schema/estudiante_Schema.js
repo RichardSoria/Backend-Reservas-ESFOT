@@ -163,17 +163,6 @@ export const updateEstudianteSchema = {
                     enum: 'La carrera debe ser una de las opciones disponibles'
                 }
             },
-            lastPeriod: {
-                type: 'string',
-                minLength: 6,
-                maxLength: 6,
-                pattern: '^\\d{4}-(A|B)$',
-                errorMessage: {
-                    minLength: 'El periodo debe tener 6 caracteres',
-                    maxlength: 'El periodo no puede tener más de 6 caracteres',
-                    pattern: 'El periodo debe tener el formato YYYY-A o YYYY-B'
-                }
-            }
         },
         additionalProperties: false
     }

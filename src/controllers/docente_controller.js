@@ -52,7 +52,7 @@ const loginDocente = async (req, reply) => {
             await docenteBDD.resetLoginAttempts();
             await docenteBDD.updateLastLogin();
 
-            const tokenJWT = generateToken(docenteBDD._id, docenteBDD.rol, docenteBDD.name, docenteBDD.lastName, req.server);
+            const tokenJWT = generateToken(docenteBDD._id, docenteBDD.rol, req.server);
 
             return reply
                 .setCookie('tokenJWT', tokenJWT, {
@@ -502,15 +502,15 @@ const getDocenteProfile = async (req, reply) => {
         }
 
         return reply.code(200).send({
-            id: docenteBDD._id,
             name: docenteBDD.name,
             lastName: docenteBDD.lastName,
             email: docenteBDD.email,
             phone: docenteBDD.phone,
+            cedula: docenteBDD.cedula,
             rol: docenteBDD.rol,
             status: docenteBDD.status,
-            lastLoginLocal: moment(docenteBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
-
+            career: docenteBDD.career,
+            otherFaculty: docenteBDD.otherFaculty,
         });
 
     } catch (error) {

@@ -53,7 +53,7 @@ const loginEstudiante = async (req, reply) => {
             await estudianteBDD.resetLoginAttempts();
             await estudianteBDD.updateLastLogin();
 
-            const tokenJWT = generateToken(estudianteBDD._id, estudianteBDD.rol, estudianteBDD.name, estudianteBDD.lastName, req.server);
+            const tokenJWT = generateToken(estudianteBDD._id, estudianteBDD.rol, req.server);
 
             return reply
                 .setCookie('tokenJWT', tokenJWT, {
@@ -84,7 +84,7 @@ const registerEstudiante = async (req, reply) => {
             return reply.status(401).send({ message: "No tienes permisos para realizar esta acción" });
         }
 
-        const { cedula, name, lastName, email, phone, career, lastPeriod } = req.body;
+        const { cedula, name, lastName, email, phone, career } = req.body;
 
         // Verificar si la cédula ya esta registrada
         const existingCedula = await Estudiante.findOne({ cedula });
@@ -121,7 +121,6 @@ const registerEstudiante = async (req, reply) => {
             email,
             phone,
             career,
-            lastPeriod,
             createFor: adminLogged._id,
             enableFor: adminLogged._id
         });
@@ -201,7 +200,6 @@ const updateEstudiante = async (req, reply) => {
         estudianteBDD.email = req.body.email || estudianteBDD.email;
         estudianteBDD.phone = req.body.phone || estudianteBDD.phone;
         estudianteBDD.career = req.body.career || estudianteBDD.career;
-        estudianteBDD.lastPeriod = req.body.lastPeriod || estudianteBDD.lastPeriod;
         estudianteBDD.updateFor = adminLogged._id;
         estudianteBDD.updatedDate = Date.now();
         await estudianteBDD.save();
@@ -488,14 +486,14 @@ const getEstudianteProfile = async (req, reply) => {
         }
 
         return reply.code(200).send({
-            id: estudianteBDD._id,
             name: estudianteBDD.name,
             lastName: estudianteBDD.lastName,
+            cedula: estudianteBDD.cedula,
             email: estudianteBDD.email,
             phone: estudianteBDD.phone,
             rol: estudianteBDD.rol,
             status: estudianteBDD.status,
-            lastLoginLocal: moment(estudianteBDD.lastLogin).tz("America/Guayaquil").format("YYYY-MM-DD HH:mm:ss")
+            career: estudianteBDD.career,
         });
     } catch (error) {
         console.error("Error al obtener perfil de estudiante:", error);

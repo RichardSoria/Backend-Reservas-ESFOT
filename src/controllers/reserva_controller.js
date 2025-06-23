@@ -1,5 +1,11 @@
 import Reserva from '../models/Reserva.js';
 import mongoose from "mongoose";
+import moment from 'moment-timezone';
+import Admin from '../models/Admin.js';
+import Docente from '../models/Docente.js';
+import Estudiante from '../models/Estudiante.js';
+import Aula from '../models/Aula.js';
+import Laboratorio from '../models/Laboratorio.js';
 
 // Método para crear una nueva reserva	
 const createReserva = async (req, reply) => {
@@ -54,12 +60,12 @@ const createReserva = async (req, reply) => {
         await newReserva.save();
 
         return reply.code(201).send({ message: 'Reserva creada exitosamente', reserva: newReserva });
-        } catch (error) {
-            console.error('Error al crear la reserva:', error);
-            return reply.code(500).send({ message: 'Error interno del servidor' });
-        }
-
+    } catch (error) {
+        console.error('Error al crear la reserva:', error);
+        return reply.code(500).send({ message: 'Error interno del servidor' });
     }
+
+}
 
 // Método para generar la reserva
 const generateReserva = async (req, reply) => {
@@ -117,11 +123,11 @@ const generateReserva = async (req, reply) => {
         await newReserva.save();
 
         return reply.code(201).send({ message: 'Reserva generada exitosamente', reserva: newReserva });
-        
+
     } catch (error) {
         console.error('Error al generar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-        
+
     }
 }
 
@@ -148,11 +154,11 @@ const approveReserva = async (req, reply) => {
         await reserva.save();
 
         return reply.code(200).send({ message: 'Reserva aprobada exitosamente', reserva });
-        
+
     } catch (error) {
         console.error('Error al aprobar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-        
+
     }
 }
 
@@ -181,11 +187,11 @@ const rejectReserva = async (req, reply) => {
         await reserva.save();
 
         return reply.code(200).send({ message: 'Reserva rechazada exitosamente', reserva });
-        
+
     } catch (error) {
         console.error('Error al rechazar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-        
+
     }
 }
 
@@ -210,24 +216,65 @@ const cancelReserva = async (req, reply) => {
         await reserva.save();
 
         return reply.code(200).send({ message: 'Reserva cancelada exitosamente', reserva });
-        
+
     } catch (error) {
         console.error('Error al cancelar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-        
+
     }
 }
 
 // Métpdpdo para obtener todas las reservas
+
 const getAllReservas = async (req, reply) => {
     try {
-        const reservas = await Reserva.find();
-        return reply.code(200).send(reservas);
+        const reservas = await Reserva.find().lean();
+
+        const eventos = await Promise.all(
+            reservas.map(async (reserva) => {
+                const fecha = moment(reserva.reservationDate).format("YYYY-MM-DD");
+                const start = new Date(`${fecha}T${reserva.startTime}`);
+                const end = new Date(`${fecha}T${reserva.endTime}`);
+
+                // Buscar el lugar
+                let lugarNombre = "Lugar desconocido";
+                if (reserva.placeType === "Aula") {
+                    const aula = await Aula.findById(reserva.placeID).select("name").lean();
+                    if (aula) lugarNombre = aula.name;
+                } else if (reserva.placeType === "Laboratorio") {
+                    const lab = await Laboratorio.findById(reserva.placeID).select("name").lean();
+                    if (lab) lugarNombre = lab.name;
+                }
+
+                // Buscar el usuario según su rol
+                let usuario = null;
+                if (reserva.userRol === "Admin") {
+                    usuario = await Admin.findById(reserva.userID).select("name lastName").lean();
+                } else if (reserva.userRol === "Docente") {
+                    usuario = await Docente.findById(reserva.userID).select("name lastName").lean();
+                } else if (reserva.userRol === "Estudiante") {
+                    usuario = await Estudiante.findById(reserva.userID).select("name lastName").lean();
+                }
+
+                const nombreCompleto = usuario ? `${usuario.name} ${usuario.lastName}` : "Usuario desconocido";
+
+                return {
+                    id: reserva._id,
+                    title: `${reserva.description} - ${nombreCompleto}`,
+                    start,
+                    end,
+                    reserva,
+                    status: reserva.status,
+                };
+            })
+        );
+
+        return reply.code(200).send(eventos);
     } catch (error) {
-        console.error('Error al obtener las reservas:', error);
-        return reply.code(500).send({ message: 'Error interno del servidor' });
+        console.error("Error al obtener las reservas:", error);
+        return reply.code(500).send({ message: "Error interno del servidor" });
     }
-}
+};
 
 // Método para obtener una reserva por ID
 const getReservaById = async (req, reply) => {
@@ -245,11 +292,11 @@ const getReservaById = async (req, reply) => {
         }
 
         return reply.code(200).send(reserva);
-        
+
     } catch (error) {
         console.error('Error al obtener la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-        
+
     }
 }
 

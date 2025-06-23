@@ -68,4 +68,6 @@ const aulaSchema = new mongoose.Schema({
 });
 
 // Exportar el modelo
-export default mongoose.model('Aula', aulaSchema);
+const Aula = mongoose.models.Aula || mongoose.model('Aula', aulaSchema);
+
+export default Aula;

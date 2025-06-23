@@ -48,12 +48,14 @@ export const createReservaSchema = {
                 }
             },
             description: {
-                type: 'string',
+                type: "string",
                 minLength: 1,
-                pattern: '^[a-zA-Z0-9\\s.,;:-]{1,200}$',
+                maxLength: 200,
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
                 errorMessage: {
-                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 200 caracteres',
-                    minLength: 'El campo de descripción es obligatorio'
+                    pattern: "La descripción puede contener letras, números y los caracteres especiales básicos (.,;:() - _ ¡! ¿? etc.)",
+                    minLength: "El campo de descripción es obligatorio",
+                    maxLength: "La descripción no puede tener más de 200 caracteres"
                 }
             },
             status: {

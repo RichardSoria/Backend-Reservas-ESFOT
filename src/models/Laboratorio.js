@@ -87,5 +87,7 @@ const laboratorioSchema = new mongoose.Schema({
     },
 });
 
-// Exportar el modelo
-export default mongoose.model('Laboratorio', laboratorioSchema);
+
+const Laboratorio = mongoose.models.Laboratorio || mongoose.model('Laboratorio', laboratorioSchema);
+
+export default Laboratorio;

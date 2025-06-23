@@ -20,6 +20,7 @@ const createReserva = async (req, reply) => {
         const { reservationDate, startTime, endTime, placeID, purpose, description } = req.body;
 
         const userID = userLogged._id;
+        const userRol = userLogged.rol
 
         if (!mongoose.Types.ObjectId.isValid(userID)) {
             return reply.code(400).send({ message: 'El ID de usuario no es válido' });
@@ -45,8 +46,7 @@ const createReserva = async (req, reply) => {
         // Crear la nueva reserva
         const newReserva = new Reserva({
             userID,
-            userRol: userLogged ? userLogged.rol : adminLogged.rol,
-            userAuthorizationID: adminLogged._id,
+            userRol,
             placeID,
             placeType,
             reservationDate,

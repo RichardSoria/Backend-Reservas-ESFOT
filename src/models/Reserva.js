@@ -60,9 +60,11 @@ const reservaSchema = new mongoose.Schema({
         required: [true, "La fecha de reserva es requerida"],
         validate: {
             validator: function (value) {
-                return moment(value).isAfter(moment());
+                const now = moment().tz('America/Guayaquil').startOf('day');
+                const input = moment(value).tz('America/Guayaquil').startOf('day');
+                return input.isSameOrAfter(now);
             },
-            message: "La fecha de reserva debe ser futura",
+            message: "La fecha de reserva debe ser hoy o futura",
         },
     },
     startTime: {
@@ -126,5 +128,38 @@ reservaSchema.statics.isDateTimeReserved = async function (reservationDate, star
 
     return overlappingReservations.length > 0;
 };
+
+// Método para verificar si las horas de inicio y fin son válidas
+reservaSchema.statics.isValidTimeRange = function (startTime, endTime) {
+    const start = moment(startTime, "HH:mm");
+    const end = moment(endTime, "HH:mm");
+    const minTime = moment("07:00", "HH:mm");
+    const maxTime = moment("20:00", "HH:mm");
+
+    // Verificar que la hora de inicio sea menor que la hora de fin
+    if (!start.isBefore(end)) {
+        return false;
+    }
+
+    // Verificar que ambos estén dentro del rango permitido
+    if (
+        !start.isSameOrAfter(minTime) ||
+        !end.isSameOrBefore(maxTime)
+    ) {
+        return false;
+    }
+
+    return true;
+};
+
+
+// Método para verificar si la reserva es futura
+reservaSchema.statics.isFutureTime = function (reservationDate, startTime, endTime) {
+    const now = moment().tz('America/Guayaquil');
+    const reservationMoment = moment(`${reservationDate} ${startTime}`, "YYYY-MM-DD HH:mm").tz('America/Guayaquil');
+    const endMoment = moment(`${reservationDate} ${endTime}`, "YYYY-MM-DD HH:mm").tz('America/Guayaquil');
+
+    return reservationMoment.isAfter(now) && endMoment.isAfter(now);
+}
 
 export default mongoose.model("Reserva", reservaSchema);

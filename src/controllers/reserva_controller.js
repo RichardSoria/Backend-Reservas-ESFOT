@@ -5,7 +5,7 @@ import Admin from '../models/Admin.js';
 import Docente from '../models/Docente.js';
 import Estudiante from '../models/Estudiante.js';
 import Aula from '../models/Aula.js';
-import Laboratorio from '../models/Laboratorio.js';
+import Laboratorio from '../models/laboratorio.js';
 
 // Método para crear una nueva reserva	
 const createReserva = async (req, reply) => {
@@ -21,6 +21,9 @@ const createReserva = async (req, reply) => {
 
         const userID = userLogged._id;
         const userRol = userLogged.rol
+        
+        const parsedReservationDate = moment(reservationDate).tz('America/Guayaquil').startOf('day').toDate();
+
 
         if (!mongoose.Types.ObjectId.isValid(userID)) {
             return reply.code(400).send({ message: 'El ID de usuario no es válido' });
@@ -30,10 +33,21 @@ const createReserva = async (req, reply) => {
         }
 
         // Verificar si la fecha y hora de reserva ya existe
-        const isReserved = await Reserva.isDateTimeReserved(reservationDate, startTime, endTime, placeID);
+        const isReserved = await Reserva.isDateTimeReserved(parsedReservationDate, startTime, endTime, placeID);
         if (isReserved) {
             return reply.code(409).send({ message: 'La fecha y hora de reserva ya existe' });
         }
+
+        // Verificar si las fecha y hora de reserva son válidas
+        if (!Reserva.isValidTimeRange(startTime, endTime)) {
+            return reply.code(400).send({ message: 'Las horas de inicio y fin deben ser válidas y estar entre las 07:00 y las 20:00' });
+        }
+
+        // Verificar si la reserva es futura
+        if (!Reserva.isFutureTime(reservationDate, startTime, endTime)) {
+            return reply.code(400).send({ message: 'La reserva debe ser para una fecha y hora futura' });
+        }
+
 
         const place = await Aula.findById(placeID) || await Laboratorio.findById(placeID)
 
@@ -43,13 +57,14 @@ const createReserva = async (req, reply) => {
 
         const placeType = place instanceof Aula ? 'Aula' : 'Laboratorio';
 
+
         // Crear la nueva reserva
         const newReserva = new Reserva({
             userID,
             userRol,
             placeID,
             placeType,
-            reservationDate,
+            reservationDate: parsedReservationDate,
             startTime,
             endTime,
             purpose,

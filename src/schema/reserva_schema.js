@@ -5,23 +5,24 @@ export const createReservaSchema = {
             'placeID',
             'placeType',
             'purpose',
-            'description',
+            'reservationDate',
             'startTime',
-            'endTime'
+            'endTime',
+            'description',
         ],
         properties: {
-            placeID: {
-                type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$',
-                errorMessage: {
-                    pattern: 'El placeID debe ser un ID de objeto válido de MongoDB'
-                }
-            },
             placeType: {
                 type: 'string',
                 enum: ['Aula', 'Laboratorio'],
                 errorMessage: {
                     enum: 'El tipo de lugar debe ser uno de los siguientes: Aula, Laboratorio'
+                }
+            },
+            placeID: {
+                type: 'string',
+                pattern: '^[0-9a-fA-F]{24}$',
+                errorMessage: {
+                    pattern: 'El placeID debe ser un ID de objeto válido de MongoDB'
                 }
             },
             purpose: {
@@ -31,23 +32,11 @@ export const createReservaSchema = {
                     enum: 'El propósito debe ser uno de los siguientes: Clase, Prueba/Examen, Proyecto, Evento/Capacitación, Otro'
                 }
             },
-            description: {
-                type: "string",
-                minLength: 1,
-                maxLength: 200,
-                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
-                errorMessage: {
-                    pattern: "La descripción puede contener letras, números y los caracteres especiales básicos (.,;:() - _ ¡! ¿? etc.)",
-                    minLength: "El campo de descripción es obligatorio",
-                    maxLength: "La descripción no puede tener más de 200 caracteres"
-                }
-            },
-            status: {
+            reservationDate: {
                 type: 'string',
-                enum: ['Pendiente', 'Aprobada', 'Rechazada', 'Cancelada'],
-                default: 'Pendiente',
+                format: 'date',
                 errorMessage: {
-                    enum: 'El estado debe ser uno de los siguientes: Pendiente, Aprobada, Rechazada, Cancelada'
+                    format: 'La fecha de reserva debe estar en formato YYYY-MM-DD'
                 }
             },
             startTime: {
@@ -62,6 +51,17 @@ export const createReservaSchema = {
                 pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$', // Validación de formato de hora (HH:mm)
                 errorMessage: {
                     pattern: 'La hora de fin debe estar en formato HH:mm'
+                }
+            },
+            description: {
+                type: "string",
+                minLength: 1,
+                maxLength: 200,
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
+                errorMessage: {
+                    pattern: "La descripción puede contener letras, números y los caracteres especiales básicos (.,;:() - _ ¡! ¿? etc.)",
+                    minLength: "El campo de descripción es obligatorio",
+                    maxLength: "La descripción no puede tener más de 200 caracteres"
                 }
             },
             additionalProperties: false

@@ -21,7 +21,7 @@ const createReserva = async (req, reply) => {
 
         const userID = userLogged._id;
         const userRol = userLogged.rol
-        
+
         const parsedReservationDate = moment(reservationDate).tz('America/Guayaquil').startOf('day').toDate();
 
 
@@ -35,7 +35,7 @@ const createReserva = async (req, reply) => {
         // Verificar si la fecha y hora de reserva ya existe
         const isReserved = await Reserva.isDateTimeReserved(parsedReservationDate, startTime, endTime, placeID);
         if (isReserved) {
-            return reply.code(409).send({ message: 'La fecha y hora de reserva ya existe' });
+            return reply.code(409).send({ message: 'El espacio ya se encuentra reservado dentro de ese horario' });
         }
 
         // Verificar si las fecha y hora de reserva son válidas
@@ -48,6 +48,10 @@ const createReserva = async (req, reply) => {
             return reply.code(400).send({ message: 'La reserva debe ser para una fecha y hora futura' });
         }
 
+        // Verificar si la fecha no es un fin de semana
+        if (Reserva.isWeekend(parsedReservationDate)) {
+            return reply.code(400).send({ message: 'No se pueden hacer reservas en fines de semana' });
+        }
 
         const place = await Aula.findById(placeID) || await Laboratorio.findById(placeID)
 
@@ -56,7 +60,6 @@ const createReserva = async (req, reply) => {
         }
 
         const placeType = place instanceof Aula ? 'Aula' : 'Laboratorio';
-
 
         // Crear la nueva reserva
         const newReserva = new Reserva({
@@ -73,6 +76,11 @@ const createReserva = async (req, reply) => {
 
         // Guardar la reserva en la base de datos
         await newReserva.save();
+
+        await (place instanceof Aula ? Aula : Laboratorio).updateOne(
+            { _id: place._id },
+            { $inc: { numberReservations: 1 } }
+        );
 
         return reply.code(201).send({ message: 'Reserva creada exitosamente', reserva: newReserva });
     } catch (error) {

@@ -152,7 +152,6 @@ reservaSchema.statics.isValidTimeRange = function (startTime, endTime) {
     return true;
 };
 
-
 // Método para verificar si la reserva es futura
 reservaSchema.statics.isFutureTime = function (reservationDate, startTime, endTime) {
     const now = moment().tz('America/Guayaquil');
@@ -160,6 +159,12 @@ reservaSchema.statics.isFutureTime = function (reservationDate, startTime, endTi
     const endMoment = moment(`${reservationDate} ${endTime}`, "YYYY-MM-DD HH:mm").tz('America/Guayaquil');
 
     return reservationMoment.isAfter(now) && endMoment.isAfter(now);
+}
+
+// Método para verificar si la fecha no es un fin de semana
+reservaSchema.statics.isWeekend = function (reservationDate) {
+    const date = moment(reservationDate).tz('America/Guayaquil');
+    return date.isoWeekday() === 6 || date.isoWeekday() === 7;
 }
 
 export default mongoose.model("Reserva", reservaSchema);

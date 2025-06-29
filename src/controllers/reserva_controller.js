@@ -10,9 +10,9 @@ import Laboratorio from '../models/laboratorio.js';
 // Método para crear una nueva reserva	
 const createReserva = async (req, reply) => {
     try {
-
         const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
 
+        // Verificar si el usuario está autenticado
         if (!userLogged) {
             return reply.code(403).send({ message: 'No tienes permiso para crear reservas' });
         }
@@ -23,7 +23,6 @@ const createReserva = async (req, reply) => {
         const userRol = userLogged.rol
 
         const parsedReservationDate = moment(reservationDate).tz('America/Guayaquil').startOf('day').toDate();
-
 
         if (!mongoose.Types.ObjectId.isValid(userID)) {
             return reply.code(400).send({ message: 'El ID de usuario no es válido' });
@@ -87,18 +86,21 @@ const createReserva = async (req, reply) => {
         console.error('Error al crear la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
     }
-
 }
 
-// Método para generar la reserva
-const generateReserva = async (req, reply) => {
+// Método para asignar la reserva
+const assignReserva = async (req, reply) => {
     try {
-        const adminBDDLogged = req.adminBDD;
+        const adminLogged = req.adminBDD
 
-        if (!adminBDDLogged) {
-            return reply.code(403).send({ message: 'No tienes permiso para generar reservas' });
+        // Verificar si el usuario es un administrador
+        if (!adminLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para asignar reservas' });
         }
-        const { userID, reservationDate, startTime, endTime, placeID, purpose, description } = req.body;
+
+        const { reservationDate, startTime, endTime, placeID, userID,purpose, description } = req.body;
+
+        const parsedReservationDate = moment(reservationDate).tz('America/Guayaquil').startOf('day').toDate();
 
         if (!mongoose.Types.ObjectId.isValid(userID)) {
             return reply.code(400).send({ message: 'El ID de usuario no es válido' });
@@ -109,33 +111,47 @@ const generateReserva = async (req, reply) => {
         }
 
         // Verificar si la fecha y hora de reserva ya existe
-        const isReserved = await Reserva.isDateTimeReserved(reservationDate, startTime, endTime, placeID);
+        const isReserved = await Reserva.isDateTimeReserved(parsedReservationDate, startTime, endTime, placeID);
         if (isReserved) {
-            return reply.code(409).send({ message: 'La fecha y hora de reserva ya existe' });
+            return reply.code(409).send({ message: 'El espacio ya se encuentra reservado dentro de ese horario' });
         }
 
-        // Verificar si el usuario existe
-        const userBDD = await Docente.findById(userID) || await Estudiante.findById(userID);
-
-        if (!userBDD) {
-            return reply.code(404).send({ message: 'El usuario no existe' });
+        // Verificar si las fecha y hora de reserva son válidas
+        if (!Reserva.isValidTimeRange(startTime, endTime)) {
+            return reply.code(400).send({ message: 'Las horas de inicio y fin deben ser válidas y estar entre las 07:00 y las 20:00' });
         }
+
+        // Verificar si la reserva es futura
+        if (!Reserva.isFutureTime(reservationDate, startTime, endTime)) {
+            return reply.code(400).send({ message: 'La reserva debe ser para una fecha y hora futura' });
+        }
+
+        // Verificar si la fecha no es un fin de semana
+        if (Reserva.isWeekend(parsedReservationDate)) {
+            return reply.code(400).send({ message: 'No se pueden hacer reservas en fines de semana' });
+        }
+
+        const place = await Aula.findById(placeID) || await Laboratorio.findById(placeID)
 
         // Verificar si el lugar existe
-        const placeBDD = await Aula.findById(placeID) || await Laboratorio.findById(placeID);
-
-        if (!placeBDD) {
+        if (!place) {
             return reply.code(404).send({ message: 'El lugar no existe' });
         }
+
+        // Determinar el tipo de lugar (Aula o Laboratorio)
+        const placeType = place instanceof Aula ? 'Aula' : 'Laboratorio';
+
+        const user = await Admin.findById(userID) || await Docente.findById(userID) || await Estudiante.findById(userID);
+
+        const userRol = user ? user.rol : null;
 
         // Crear la nueva reserva
         const newReserva = new Reserva({
             userID,
-            userRol: userBDD instanceof Docente ? 'Docente' : 'Estudiante',
-            userAuthorizationID: adminBDDLogged._id,
+            userRol,
             placeID,
-            placeType: placeBDD instanceof Aula ? 'Aula' : 'Laboratorio',
-            reservationDate,
+            placeType,
+            reservationDate: parsedReservationDate,
             startTime,
             endTime,
             purpose,
@@ -145,12 +161,15 @@ const generateReserva = async (req, reply) => {
         // Guardar la reserva en la base de datos
         await newReserva.save();
 
-        return reply.code(201).send({ message: 'Reserva generada exitosamente', reserva: newReserva });
+        await (place instanceof Aula ? Aula : Laboratorio).updateOne(
+            { _id: place._id },
+            { $inc: { numberReservations: 1 } }
+        );
 
+        return reply.code(201).send({ message: 'Reserva creada exitosamente', reserva: newReserva });
     } catch (error) {
-        console.error('Error al generar la reserva:', error);
+        console.error('Error al crear la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-
     }
 }
 
@@ -325,7 +344,7 @@ const getReservaById = async (req, reply) => {
 
 export {
     createReserva,
-    generateReserva,
+    assignReserva,
     approveReserva,
     rejectReserva,
     cancelReserva,

@@ -98,7 +98,7 @@ const assignReserva = async (req, reply) => {
             return reply.code(403).send({ message: 'No tienes permiso para asignar reservas' });
         }
 
-        const { reservationDate, startTime, endTime, placeID, userID,purpose, description } = req.body;
+        const { reservationDate, startTime, endTime, placeID, userID, purpose, description } = req.body;
 
         const parsedReservationDate = moment(reservationDate).tz('America/Guayaquil').startOf('day').toDate();
 
@@ -208,7 +208,7 @@ const rejectReserva = async (req, reply) => {
     try {
         const adminLogged = req.adminBDD;
         const { id } = req.params;
-        const { rejectReason } = req.body;
+        const { reason } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
@@ -223,7 +223,7 @@ const rejectReserva = async (req, reply) => {
 
         // Actualizar el estado de la reserva a "rechazada"
         reserva.status = 'Rechazada';
-        reserva.rejectReason = rejectReason || 'No se proporcionó motivo de rechazo';
+        reserva.reason = reason || 'No se proporcionó motivo de rechazo';
         reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que rechaza la reserva
         reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
         await reserva.save();
@@ -327,20 +327,59 @@ const getReservaById = async (req, reply) => {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
         }
 
-        const reserva = await Reserva.findById(id);
+        const reserva = await Reserva.findById(id).lean(); // solo la reserva base
 
         if (!reserva) {
             return reply.code(404).send({ message: 'La reserva no existe' });
         }
 
-        return reply.code(200).send(reserva);
+        // 1. Buscar el nombre del lugar
+        let lugarNombre = 'Lugar desconocido';
+        if (reserva.placeType === 'Aula') {
+            const aula = await Aula.findById(reserva.placeID).select('name').lean();
+            if (aula) lugarNombre = aula.name;
+        } else if (reserva.placeType === 'Laboratorio') {
+            const lab = await Laboratorio.findById(reserva.placeID).select('name').lean();
+            if (lab) lugarNombre = lab.name;
+        }
+
+        // 2. Buscar el usuario solicitante
+        let usuario = null;
+        if (reserva.userRol === 'Admin') {
+            usuario = await Admin.findById(reserva.userID).select('name lastName').lean();
+        } else if (reserva.userRol === 'Docente') {
+            usuario = await Docente.findById(reserva.userID).select('name lastName').lean();
+        } else if (reserva.userRol === 'Estudiante') {
+            usuario = await Estudiante.findById(reserva.userID).select('name lastName').lean();
+        }
+
+        const solicitante = usuario ? `${usuario.name} ${usuario.lastName}` : 'Usuario desconocido';
+
+        // 3. Buscar admin que autorizó (si existe)
+        let autorizadoPor = null;
+        if (reserva.userAuthorizationID) {
+            const admin = await Admin.findById(reserva.userAuthorizationID).select('name lastName').lean();
+            if (admin) {
+                autorizadoPor = `${admin.name} ${admin.lastName}`;
+            }
+        }
+
+        // 4. Respuesta compuesta
+        const respuesta = {
+            ...reserva,
+            lugarNombre,
+            solicitante,
+            autorizadoPor,
+        };
+
+        return reply.code(200).send(respuesta);
 
     } catch (error) {
         console.error('Error al obtener la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-
     }
-}
+};
+
 
 export {
     createReserva,

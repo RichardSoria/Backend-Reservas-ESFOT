@@ -172,9 +172,9 @@ export const assignReservaSchema = {
 export const rejectReasonSchema = {
     body: {
         type: 'object',
-        required: ['rejectReason'],
+        required: ['reason'],
         properties: {
-            rejectReason: {
+            reason: {
                 type: 'string',
                 minLength: 1,
                 pattern: '^[a-zA-Z0-9\\s.,;:-]{1,200}$',

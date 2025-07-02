@@ -50,7 +50,7 @@ const reservaSchema = new mongoose.Schema({
         enum: ["Pendiente", "Aprobada", "Rechazada", "Cancelada"],
         default: "Pendiente",
     },
-    rejectReason: {
+    reason: {
         type: String,
         default: null,
         maxlength: [200, "El motivo de rechazo no puede tener más de 200 caracteres"],

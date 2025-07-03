@@ -177,6 +177,7 @@ const approveReserva = async (req, reply) => {
     try {
         const adminLogged = req.adminBDD;
         const { id } = req.params;
+        const { reason } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
@@ -191,6 +192,7 @@ const approveReserva = async (req, reply) => {
 
         // Actualizar el estado de la reserva a "aprobada"
         reserva.status = 'Aprobada';
+        reserva.reason = reason;
         reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que aprueba la reserva
         reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
         await reserva.save();
@@ -223,7 +225,7 @@ const rejectReserva = async (req, reply) => {
 
         // Actualizar el estado de la reserva a "rechazada"
         reserva.status = 'Rechazada';
-        reserva.reason = reason || 'No se proporcionó motivo de rechazo';
+        reserva.reason = reason;
         reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que rechaza la reserva
         reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
         await reserva.save();

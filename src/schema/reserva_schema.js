@@ -169,20 +169,26 @@ export const assignReservaSchema = {
 
 
 
-export const rejectReasonSchema = {
-    body: {
-        type: 'object',
-        required: ['reason'],
-        properties: {
-            reason: {
-                type: 'string',
-                minLength: 1,
-                pattern: '^[a-zA-Z0-9\\s.,;:-]{1,200}$',
-                errorMessage: {
-                    pattern: 'La descripción puede contener letras, números y algunos caracteres especiales (.,;:-) y tener hasta 200 caracteres',
-                    minLength: 'El campo de descripción es obligatorio'
-                }
+export const reasonReservaSchema = {
+    type: 'object',
+    properties: {
+        reason: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 200,
+            pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
+            errorMessage: {
+                pattern: "La razón puede contener letras, números y los caracteres especiales básicos (.,;:() - _ ¡! ¿? etc.)",
+                minLength: "El campo de razón es obligatorio",
+                maxLength: "La razón no puede tener más de 200 caracteres"
             }
+        }
+    },
+    required: ['reason'],
+    additionalProperties: false,
+    errorMessage: {
+        required: {
+            reason: 'La razón es obligatoria'
         }
     }
 };

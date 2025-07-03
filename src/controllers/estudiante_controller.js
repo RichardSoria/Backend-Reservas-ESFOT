@@ -45,7 +45,7 @@ const loginEstudiante = async (req, reply) => {
             }
 
             await estudianteBDD.save();
-            return reply.status(401).json({ message: "Credenciales Incorrectas" });
+            return reply.code(400).send({ message: "Credenciales Incorrectas" });
         }
 
         // Si la contraseña es correcta, reiniciar los intentos de inicio de sesión

@@ -242,6 +242,14 @@ const rejectReserva = async (req, reply) => {
 const cancelReserva = async (req, reply) => {
     try {
         const { id } = req.params;
+        const { reason } = req.body;
+        const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
+
+        // Verificar si el usuario está autenticado
+        if (!userLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para cancelar reservas' });
+        }
+
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
@@ -256,6 +264,7 @@ const cancelReserva = async (req, reply) => {
 
         // Actualizar el estado de la reserva a "cancelada"
         reserva.status = 'Cancelada';
+        reserva.reason = reason;
         reserva.cancellationDate = Date.now(); // Asignar la fecha de cancelación
         await reserva.save();
 

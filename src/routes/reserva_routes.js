@@ -5,9 +5,9 @@ import verifyAuth from '../middlewares/authentication.js';
 export default async function reservaRoutes(fastify) {
     fastify.post('/create', { preHandler: verifyAuth, schema: createReservaSchema }, createReserva);
     fastify.post('/assign', { preHandler: verifyAuth, schema: assignReservaSchema }, assignReserva);
-    fastify.post('/approve/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, approveReserva);
-    fastify.post('/reject/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, rejectReserva);
-    fastify.post('/cancel/:id', { preHandler: verifyAuth }, cancelReserva);
+    fastify.patch('/approve/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, approveReserva);
+    fastify.patch('/reject/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, rejectReserva);
+    fastify.patch('/cancel/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, cancelReserva);
     fastify.get('/reservas', { preHandler: verifyAuth }, getAllReservas);
     fastify.get('/reservas/:id', { preHandler: verifyAuth }, getReservaById);
 }

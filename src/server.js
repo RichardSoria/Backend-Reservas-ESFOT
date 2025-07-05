@@ -47,7 +47,7 @@ await fastify.register(fastifyCookie, { secret: fastify.config.COOKIE_SECRET });
 
 await fastify.register(cors, {
   origin: fastify.config.URL_FRONTEND,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 });

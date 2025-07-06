@@ -1,4 +1,4 @@
-import { createReserva, assignReserva, approveReserva, rejectReserva, cancelReserva, getAllReservas, getReservaById } from '../controllers/reserva_controller.js';
+import { createReserva, assignReserva, approveReserva, rejectReserva, cancelReserva, getAllReservas, getAllReservasGeneral, getReservaById } from '../controllers/reserva_controller.js';
 import { createReservaSchema, assignReservaSchema, reasonReservaSchema } from '../schema/reserva_schema.js';
 import verifyAuth from '../middlewares/authentication.js';
 
@@ -9,5 +9,6 @@ export default async function reservaRoutes(fastify) {
     fastify.patch('/reject/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, rejectReserva);
     fastify.patch('/cancel/:id', { preHandler: verifyAuth, schema: reasonReservaSchema }, cancelReserva);
     fastify.get('/reservas', { preHandler: verifyAuth }, getAllReservas);
+    fastify.get('/reservas/general', { preHandler: verifyAuth }, getAllReservasGeneral); 
     fastify.get('/reservas/:id', { preHandler: verifyAuth }, getReservaById);
 }

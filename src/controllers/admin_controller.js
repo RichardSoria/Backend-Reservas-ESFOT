@@ -466,6 +466,7 @@ const getAdminProfile = async (req, reply) => {
         }
 
         return reply.code(200).send({
+            _id: adminBDD._id,
             name: adminBDD.name,
             lastName: adminBDD.lastName,
             cedula: adminBDD.cedula,

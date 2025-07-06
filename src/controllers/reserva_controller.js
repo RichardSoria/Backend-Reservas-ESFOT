@@ -179,6 +179,11 @@ const approveReserva = async (req, reply) => {
         const { id } = req.params;
         const { reason } = req.body;
 
+        // Verificar si el usuario es un administrador
+        if (!adminLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para aprobar reservas' });
+        }
+
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
         }
@@ -211,6 +216,11 @@ const rejectReserva = async (req, reply) => {
         const adminLogged = req.adminBDD;
         const { id } = req.params;
         const { reason } = req.body;
+
+        // Verificar si el usuario es un administrador
+        if (!adminLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para rechazar reservas' });
+        }
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
@@ -282,22 +292,18 @@ const cancelReserva = async (req, reply) => {
 const getAllReservas = async (req, reply) => {
     try {
         const reservas = await Reserva.find().lean();
+        const adminLogged = req.adminBDD;
+
+        // Verificar si el usuario es un administrador
+        if (!adminLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para ver las reservas' });
+        }
 
         const eventos = await Promise.all(
             reservas.map(async (reserva) => {
                 const fecha = moment(reserva.reservationDate).format("YYYY-MM-DD");
                 const start = new Date(`${fecha}T${reserva.startTime}`);
                 const end = new Date(`${fecha}T${reserva.endTime}`);
-
-                // Buscar el lugar
-                let lugarNombre = "Lugar desconocido";
-                if (reserva.placeType === "Aula") {
-                    const aula = await Aula.findById(reserva.placeID).select("name").lean();
-                    if (aula) lugarNombre = aula.name;
-                } else if (reserva.placeType === "Laboratorio") {
-                    const lab = await Laboratorio.findById(reserva.placeID).select("name").lean();
-                    if (lab) lugarNombre = lab.name;
-                }
 
                 // Buscar el usuario según su rol
                 let usuario = null;
@@ -329,10 +335,61 @@ const getAllReservas = async (req, reply) => {
     }
 };
 
+const getAllReservasGeneral = async (req, reply) => {
+    try {
+        const reservas = await Reserva.find().lean();
+        const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
+
+        // Verificar si el usuario está autenticado
+        if (!userLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para ver las reservas' });
+        }
+
+        const eventos = await Promise.all(
+            reservas.map(async (reserva) => {
+                const fecha = moment(reserva.reservationDate).format("YYYY-MM-DD");
+                const start = new Date(`${fecha}T${reserva.startTime}`);
+                const end = new Date(`${fecha}T${reserva.endTime}`);
+
+                // Buscar el lugar
+                let lugarNombre = "Lugar desconocido";
+                if (reserva.placeType === "Aula") {
+                    const aula = await Aula.findById(reserva.placeID).select("name").lean();
+                    if (aula) lugarNombre = aula.name;
+                } else if (reserva.placeType === "Laboratorio") {
+                    const lab = await Laboratorio.findById(reserva.placeID).select("name").lean();
+                    if (lab) lugarNombre = lab.name;
+                }
+
+                return {
+                    id: reserva._id,
+                    userID: reserva.userID,
+                    title: `${reserva.placeType} - ${lugarNombre} - ${reserva.status}`,
+                    start,
+                    end,
+                    reserva,
+                    status: reserva.status,
+                    lugarNombre
+                };
+            })
+        );
+        return reply.code(200).send(eventos);
+    } catch (error) {
+        console.error("Error al obtener las reservas:", error);
+        return reply.code(500).send({ message: "Error interno del servidor" });
+    }
+}
+
 // Método para obtener una reserva por ID
 const getReservaById = async (req, reply) => {
     try {
         const { id } = req.params;
+        const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
+
+        // Verificar si el usuario está autenticado
+        if (!userLogged) {
+            return reply.code(403).send({ message: 'No tienes permiso para ver reservas' });
+        }
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: 'El ID de reserva no es válido' });
@@ -399,5 +456,6 @@ export {
     rejectReserva,
     cancelReserva,
     getAllReservas,
+    getAllReservasGeneral,
     getReservaById
 }

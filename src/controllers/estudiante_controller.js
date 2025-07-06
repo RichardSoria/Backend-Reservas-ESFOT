@@ -486,6 +486,7 @@ const getEstudianteProfile = async (req, reply) => {
         }
 
         return reply.code(200).send({
+            _id: estudianteBDD._id,
             name: estudianteBDD.name,
             lastName: estudianteBDD.lastName,
             cedula: estudianteBDD.cedula,

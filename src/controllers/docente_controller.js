@@ -502,6 +502,7 @@ const getDocenteProfile = async (req, reply) => {
         }
 
         return reply.code(200).send({
+            _id: docenteBDD._id,
             name: docenteBDD.name,
             lastName: docenteBDD.lastName,
             email: docenteBDD.email,

@@ -30,8 +30,10 @@ addErrors(ajv);
 const fastify = Fastify({
   logger: true,
   ajv: {
-    customOptions: { allErrors: true },
-    plugins: [addErrors]
+    customOptions: { allErrors: true, strict: false },
+    plugins: [addErrors],
+    options: {},
+    factory: () => ajv
   }
 });
 

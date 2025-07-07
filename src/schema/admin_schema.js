@@ -618,6 +618,7 @@ export const getAllAdminsSchema = {
                     lastName: { type: 'string', example: 'Pérez' },
                     email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                     phone: { type: 'string', example: '0987654321' },
+                    status: { type: 'boolean', example: true },
                     status: { type: 'boolean', example: true }
                 }
             }
@@ -668,6 +669,7 @@ export const getAdminByIdSchema = {
                 lastName: { type: 'string', example: 'Pérez' },
                 email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                 phone: { type: 'string', example: '0987654321' },
+                rol: { type: 'string', example: 'Admin' },
                 status: { type: 'boolean', example: true }
             }
         },
@@ -717,6 +719,7 @@ export const getAdminProfileSchema = {
                 lastName: { type: 'string', example: 'Pérez' },
                 email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                 phone: { type: 'string', example: '0987654321' },
+                rol: { type: 'string', example: 'Admin'},
                 status: { type: 'boolean', example: true }
             }
         },

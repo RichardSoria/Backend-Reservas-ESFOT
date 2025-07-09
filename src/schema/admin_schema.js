@@ -619,7 +619,7 @@ export const getAllAdminsSchema = {
                     email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                     phone: { type: 'string', example: '0987654321' },
                     status: { type: 'boolean', example: true },
-                    status: { type: 'boolean', example: true }
+                    lastLogin: { type: 'string', format: 'date', example: '2025-07-08T00:00:00.000Z' },
                 }
             }
         },
@@ -670,7 +670,43 @@ export const getAdminByIdSchema = {
                 email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                 phone: { type: 'string', example: '0987654321' },
                 rol: { type: 'string', example: 'Admin' },
-                status: { type: 'boolean', example: true }
+                status: { type: 'boolean', example: true },
+                createdDate: { type: 'string', format: 'date-time', example: '2024-01-01T12:00:00.000Z' },
+                updatedDate: { type: 'string', format: 'date-time', example: '2024-01-10T08:00:00.000Z' },
+                enableDate: { type: 'string', format: 'date-time', example: '2024-01-02T09:00:00.000Z' },
+                disableDate: { type: 'string', format: 'date-time', example: '2024-03-01T10:00:00.000Z' },
+                createFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Carlos' },
+                        lastName: { type: 'string', example: 'Ramírez' }
+                    }
+                },
+                updateFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Ana' },
+                        lastName: { type: 'string', example: 'Martínez' }
+                    }
+                },
+                enableFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Mario' },
+                        lastName: { type: 'string', example: 'Rojas' }
+                    }
+                },
+                disableFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Luis' },
+                        lastName: { type: 'string', example: 'Gómez' }
+                    }
+                }
             }
         },
         400: {
@@ -704,6 +740,7 @@ export const getAdminByIdSchema = {
     }
 };
 
+
 export const getAdminProfileSchema = {
     tags: ['Administradores'],
     summary: 'Obtener perfil del administrador autenticado',
@@ -719,7 +756,7 @@ export const getAdminProfileSchema = {
                 lastName: { type: 'string', example: 'Pérez' },
                 email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                 phone: { type: 'string', example: '0987654321' },
-                rol: { type: 'string', example: 'Admin'},
+                rol: { type: 'string', example: 'Admin' },
                 status: { type: 'boolean', example: true }
             }
         },

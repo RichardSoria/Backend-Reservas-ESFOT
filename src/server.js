@@ -105,8 +105,26 @@ cloudinary.config({
 await connectDB(fastify);
 
 // Rutas base
-fastify.get('/api/auth/status', async (req, reply) => {
-  // Verificar si existe la cookie firmada (ejemplo: tokenJWT)
+fastify.get('/api/auth/status', {
+  schema: {
+    tags: ['Autenticación'],
+    summary: 'Verificar autenticación del usuario',
+    description: 'Devuelve si el usuario está autenticado basándose en la cookie `tokenJWT`',
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          authenticated: { type: 'boolean' },
+          user: {
+            type: 'object',
+            nullable: true,
+            description: 'Información del usuario si está autenticado'
+          }
+        }
+      }
+    }
+  }
+}, async (req, reply) => {
   if (!req.unsignCookie || !req.cookies.tokenJWT) {
     return reply.send({ authenticated: false });
   }
@@ -123,11 +141,27 @@ fastify.get('/api/auth/status', async (req, reply) => {
   } catch (error) {
     return reply.send({ authenticated: false });
   }
-})
+});
 
-fastify.post('/api/logout', { preHandler: verifyAuth }, async (req, reply) => {
+fastify.post('/api/logout', {
+  preHandler: verifyAuth,
+  schema: {
+    tags: ['Autenticación'],
+    summary: 'Cerrar sesión del usuario',
+    description: 'Elimina la cookie de autenticación JWT y finaliza la sesión del usuario.',
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          message: { type: 'string', example: 'Sesión cerrada exitosamente' }
+        }
+      }
+    }
+  }
+}, async (req, reply) => {
   reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada' });
 });
+
 
 // Rutas del sistema
 await fastify.register(adminRoutes, { prefix: "/api/admin" });

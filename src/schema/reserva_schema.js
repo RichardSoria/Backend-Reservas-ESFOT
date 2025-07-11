@@ -1,4 +1,7 @@
 export const createReservaSchema = {
+    tags: ['Reservas'],
+    summary: 'Crear nueva reserva por usuario autenticado',
+    description: 'Permite a un usuario autenticado (administrador, docente o estudiante) crear una nueva reserva si cumple con los requisitos de fecha, hora y disponibilidad.',
     body: {
         type: 'object',
         required: [
@@ -13,63 +16,73 @@ export const createReservaSchema = {
         properties: {
             placeType: {
                 type: 'string',
-                enum: ['Aula', 'Laboratorio'],
-                errorMessage: {
-                    enum: 'El tipo de lugar debe ser uno de los siguientes: Aula, Laboratorio'
-                }
+                enum: ['Aula', 'Laboratorio']
             },
             placeID: {
                 type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$',
-                errorMessage: {
-                    pattern: 'El placeID debe ser un ID de objeto válido de MongoDB'
-                }
+                pattern: '^[0-9a-fA-F]{24}$'
             },
             purpose: {
                 type: 'string',
-                enum: ['Clase', 'Prueba/Examen', 'Proyecto', 'Evento/Capacitación', 'Otro'],
-                errorMessage: {
-                    enum: 'El propósito debe ser uno de los siguientes: Clase, Prueba/Examen, Proyecto, Evento/Capacitación, Otro'
-                }
+                enum: ['Clase', 'Prueba/Examen', 'Proyecto', 'Evento/Capacitación', 'Otro']
             },
             reservationDate: {
                 type: 'string',
-                format: 'date',
-                errorMessage: {
-                    format: 'La fecha de reserva debe estar en formato YYYY-MM-DD'
-                }
+                format: 'date'
             },
             startTime: {
                 type: 'string',
-                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$', // Validación de formato de hora (HH:mm)
-                errorMessage: {
-                    pattern: 'La hora de inicio debe estar en formato HH:mm'
-                }
+                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
             },
             endTime: {
                 type: 'string',
-                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$', // Validación de formato de hora (HH:mm)
-                errorMessage: {
-                    pattern: 'La hora de fin debe estar en formato HH:mm'
-                }
+                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
             },
             description: {
-                type: "string",
+                type: 'string',
                 minLength: 1,
                 maxLength: 200,
-                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
-                errorMessage: {
-                    pattern: "La descripción puede contener letras, números y los caracteres especiales básicos (.,;:() - _ ¡! ¿? etc.)",
-                    minLength: "El campo de descripción es obligatorio",
-                    maxLength: "La descripción no puede tener más de 200 caracteres"
-                }
-            },
-            additionalProperties: false
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$"
+            }
+        },
+        additionalProperties: false
+    },
+    response: {
+        201: {
+            description: 'Reserva creada exitosamente',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Reserva creada exitosamente' }
+            }
+        },
+        400: {
+            description: 'Error en los datos enviados',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Las horas de inicio y fin deben ser válidas y estar entre las 07:00 y las 20:00' }
+            }
+        },
+        409: {
+            description: 'Espacio reservado previamente en ese horario',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El espacio ya se encuentra reservado dentro de ese horario' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
         }
     }
 };
 
 export const assignReservaSchema = {
+    tags: ['Reservas'],
+    summary: 'Asignar reserva como administrador',
+    description: 'Permite a un administrador asignar una reserva a un usuario específico, cumpliendo con los requisitos de fecha, hora y disponibilidad.',
     body: {
         type: 'object',
         required: [
@@ -86,109 +99,416 @@ export const assignReservaSchema = {
         properties: {
             placeType: {
                 type: 'string',
-                enum: ['Aula', 'Laboratorio'],
-                errorMessage: {
-                    enum: 'El tipo de lugar debe ser Aula o Laboratorio'
-                }
+                enum: ['Aula', 'Laboratorio']
             },
             placeID: {
                 type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$',
-                errorMessage: {
-                    pattern: 'El espacio académico es obligatorio'
-                }
+                pattern: '^[0-9a-fA-F]{24}$'
             },
             userRol: {
                 type: 'string',
-                enum: ['Administrador', 'Docente', 'Estudiante'],
-                errorMessage: {
-                    enum: 'Seleccione un rol de usuario válido'
-                }
+                enum: ['Administrador', 'Docente', 'Estudiante']
             },
             userID: {
                 type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$',
-                errorMessage: {
-                    pattern: 'El usuario es obligatorio'
-                }
+                pattern: '^[0-9a-fA-F]{24}$'
             },
             purpose: {
                 type: 'string',
-                enum: ['Clase', 'Prueba/Examen', 'Proyecto', 'Evento/Capacitación', 'Otro'],
-                errorMessage: {
-                    enum: 'Seleccione una de las opciones disponibles'
-                }
+                enum: ['Clase', 'Prueba/Examen', 'Proyecto', 'Evento/Capacitación', 'Otro']
             },
             reservationDate: {
                 type: 'string',
-                format: 'date',
-                errorMessage: {
-                    format: 'La fecha de reserva es obligatoria'
-                }
+                format: 'date'
             },
             startTime: {
                 type: 'string',
-                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$',
-                errorMessage: {
-                    pattern: 'La hora de inicio es obligatoria'
-                }
+                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
             },
             endTime: {
                 type: 'string',
-                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$',
-                errorMessage: {
-                    pattern: 'La hora de fin es obligatoria'
-                }
+                pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
             },
             description: {
                 type: 'string',
                 minLength: 1,
                 maxLength: 200,
-                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
-                errorMessage: {
-                    minLength: 'La descripción no puede estar vacía',
-                    pattern: 'La descripción solo puede contener letras, números y (.,;:-)',
-                    maxLength: 'Máximo 200 caracteres'
-                }
-            },
-        },
-        errorMessage: {
-            required: {
-                placeType: 'El tipo de lugar es obligatorio',
-                placeID: 'El espacio académico es obligatorio',
-                userRol: 'El rol de usuario es obligatorio',
-                userID: 'El usuario es obligatorio',
-                purpose: 'El propósito es obligatorio',
-                reservationDate: 'La fecha de reserva es obligatoria',
-                description: 'La descripción es obligatoria'
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$"
             }
         },
-        additionalProperties: false,
+        additionalProperties: false
+    },
+    response: {
+        201: {
+            description: 'Reserva creada exitosamente',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Reserva creada exitosamente' }
+            }
+        },
+        400: {
+            description: 'Error en los datos enviados',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El ID de usuario no es válido' }
+            }
+        },
+        409: {
+            description: 'Espacio reservado previamente en ese horario',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El espacio ya se encuentra reservado dentro de ese horario' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
+        }
     }
 };
 
+export const approveReservaSchema = {
+    tags: ['Reservas'],
+    summary: 'Aprobar una reserva por ID',
+    description: 'Permite a un administrador aprobar una reserva existente, asignando una razón y registrando la autorización.',
 
-
-export const reasonReservaSchema = {
-    type: 'object',
-    properties: {
-        reason: {
-            type: 'string',
-            minLength: 1,
-            maxLength: 200,
-            pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$",
-            errorMessage: {
-                pattern: "La razón puede contener letras, números y los caracteres especiales básicos (.,;:() - _ ¡! ¿? etc.)",
-                minLength: "El campo de razón es obligatorio",
-                maxLength: "La razón no puede tener más de 200 caracteres"
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: {
+                type: 'string',
+                pattern: '^[0-9a-fA-F]{24}$'
             }
         }
     },
-    required: ['reason'],
-    additionalProperties: false,
-    errorMessage: {
-        required: {
-            reason: 'La razón es obligatoria'
+
+    body: {
+        type: 'object',
+        required: ['reason'],
+        properties: {
+            reason: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 200,
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$"
+            }
+        },
+        additionalProperties: false
+    },
+
+    response: {
+        200: {
+            description: 'Reserva aprobada exitosamente',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Reserva aprobada exitosamente' }
+            }
+        },
+        400: {
+            description: 'ID no válido o datos incorrectos',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El ID de reserva no es válido' }
+            }
+        },
+        404: {
+            description: 'Reserva no encontrada',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'La reserva no existe' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
+        }
+    }
+};
+
+export const rejectReservaSchema = {
+    tags: ['Reservas'],
+    summary: 'Rechazar una reserva por ID',
+    description: 'Permite a un administrador rechazar una reserva existente indicando la razón correspondiente.',
+
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: {
+                type: 'string',
+                pattern: '^[0-9a-fA-F]{24}$'
+            }
+        }
+    },
+
+    body: {
+        type: 'object',
+        required: ['reason'],
+        properties: {
+            reason: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 200,
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$"
+            }
+        },
+        additionalProperties: false
+    },
+
+    response: {
+        200: {
+            description: 'Reserva rechazada exitosamente',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Reserva rechazada exitosamente' }
+            }
+        },
+        400: {
+            description: 'ID no válido o datos incorrectos',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El ID de reserva no es válido' }
+            }
+        },
+        404: {
+            description: 'Reserva no encontrada',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'La reserva no existe' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
+        }
+    }
+};
+
+export const cancelReservaSchema = {
+    tags: ['Reservas'],
+    summary: 'Cancelar una reserva por ID',
+    description: 'Permite a un usuario autenticado cancelar su propia reserva indicando la razón correspondiente.',
+
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: {
+                type: 'string',
+                pattern: '^[0-9a-fA-F]{24}$'
+            }
+        }
+    },
+
+    body: {
+        type: 'object',
+        required: ['reason'],
+        properties: {
+            reason: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 200,
+                pattern: "^[\\p{L}\\d\\s.,;:()\\-–—_¡!¿?\"'´`]+$"
+            }
+        },
+        additionalProperties: false
+    },
+
+    response: {
+        200: {
+            description: 'Reserva cancelada exitosamente',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Reserva cancelada exitosamente' }
+            }
+        },
+        400: {
+            description: 'ID no válido o datos incorrectos',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El ID de reserva no es válido' }
+            }
+        },
+        404: {
+            description: 'Reserva no encontrada',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'La reserva no existe' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
+        }
+    }
+};
+
+export const getAllReservasSchema = {
+    tags: ['Reservas'],
+    summary: 'Visualizar todas las reservas (modo administrador)',
+    description: 'Permite a un administrador autenticado visualizar todas las reservas del sistema con detalles de cada evento.',
+
+    response: {
+        200: {
+            description: 'Listado de reservas con datos completos para el administrador',
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    title: { type: 'string' },
+                    start: { type: 'string', format: 'date-time' },
+                    end: { type: 'string', format: 'date-time' },
+                    reserva: { type: 'object' }, // Contiene toda la reserva en bruto
+                    status: { type: 'string' }
+                }
+            }
+        },
+        403: {
+            description: 'Usuario no autorizado (no es administrador)',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'No tienes permiso para ver las reservas' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
+        }
+    }
+};
+
+export const getAllReservasGeneralSchema = {
+    tags: ['Reservas'],
+    summary: 'Visualizar reservas generales',
+    description: 'Permite a cualquier usuario autenticado (administrador, docente o estudiante) visualizar de forma general todas las reservas registradas.',
+
+    response: {
+        200: {
+            description: 'Listado de eventos de reservas generales',
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    userID: { type: 'string' },
+                    title: { type: 'string' },
+                    start: { type: 'string', format: 'date-time' },
+                    end: { type: 'string', format: 'date-time' },
+                    reserva: { type: 'object' }, // Estructura anidada completa de la reserva
+                    status: { type: 'string' },
+                    lugarNombre: { type: 'string' }
+                }
+            }
+        },
+        403: {
+            description: 'Usuario no autorizado',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'No tienes permiso para ver las reservas' }
+            }
+        },
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
+        }
+    }
+};
+
+export const getReservaByIdSchema = {
+    tags: ['Reservas'],
+    summary: 'Obtener una reserva por ID',
+    description: 'Devuelve la información completa y detallada de una reserva específica para usuarios autenticados (admin, docente o estudiante).',
+
+    params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+            id: {
+                type: 'string',
+                pattern: '^[0-9a-fA-F]{24}$'
+            }
+        }
+    },
+
+    response: {
+        200: {
+            description: 'Reserva encontrada con detalles',
+            type: 'object',
+            properties: {
+                _id: { type: 'string', example: '64a5f5c8e4a4a1234567890a' },
+                userID: { type: 'string', example: '64b1fcdbe4f1a91234567890' },
+                userRol: { type: 'string', example: 'Docente' },
+                placeID: { type: 'string', example: '64c9af1e0a1b5a1234567890' },
+                placeType: { type: 'string', example: 'Aula' },
+                reservationDate: { type: 'string', format: 'date', example: '2025-07-15' },
+                startTime: { type: 'string', example: '09:00' },
+                endTime: { type: 'string', example: '11:00' },
+                purpose: { type: 'string', example: 'Clase' },
+                description: { type: 'string', example: 'Clase de Física II' },
+                status: { type: 'string', example: 'Aprobada' },
+                reason: { type: 'string', nullable: true, example: 'Espacio disponible y reservado con antelación' },
+                userAuthorizationID: { type: 'string', nullable: true, example: '64e5c72f1e2a941234567890' },
+                authorizationDate: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-10T10:30:00Z' },
+                cancellationDate: { type: 'string', format: 'date-time', nullable: true, example: null },
+                createdAt: { type: 'string', format: 'date-time', example: '2025-07-08T14:00:00Z' },
+                updatedAt: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-09T09:45:00Z' },
+
+                lugarNombre: { type: 'string', example: 'Aula B203' },
+                solicitante: { type: 'string', example: 'Ana Martínez' },
+                autorizadoPor: { type: 'string', nullable: true, example: 'Carlos Romero' }
+            }
+        },
+
+        400: {
+            description: 'ID de reserva inválido',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'El ID de reserva no es válido' }
+            }
+        },
+
+        403: {
+            description: 'No autorizado',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'No tienes permiso para ver reservas' }
+            }
+        },
+
+        404: {
+            description: 'Reserva no encontrada',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'La reserva no existe' }
+            }
+        },
+
+        500: {
+            description: 'Error interno del servidor',
+            type: 'object',
+            properties: {
+                message: { type: 'string', example: 'Error interno del servidor' }
+            }
         }
     }
 };

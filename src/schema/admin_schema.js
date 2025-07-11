@@ -94,7 +94,7 @@ export const registerAdminSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[\\p{L}]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras',
                     minLength: 'El campo de nombre es obligatorio',
@@ -105,7 +105,7 @@ export const registerAdminSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[\\p{L}]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras',
                     minLength: 'El campo de apellido es obligatorio',
@@ -201,7 +201,7 @@ export const updateAdminSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[\\p{L}]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El nombre solo puede contener letras',
                     minLength: 'El campo de nombre es obligatorio',
@@ -212,7 +212,7 @@ export const updateAdminSchema = {
                 type: 'string',
                 minLength: 1,
                 maxLength: 20,
-                pattern: '^[\\p{L}]+$',
+                pattern: '^[\\p{L}]{1,20}$',
                 errorMessage: {
                     pattern: 'El apellido solo puede contener letras',
                     minLength: 'El campo de apellido es obligatorio',
@@ -291,7 +291,6 @@ export const enableAdminSchema = {
         properties: {
             id: {
                 type: 'string',
-                description: 'ID del administrador a habilitar',
                 pattern: '^[0-9a-fA-F]{24}$',
                 errorMessage: {
                     pattern: 'El ID debe ser un ObjectId válido'
@@ -355,7 +354,6 @@ export const disableAdminSchema = {
         properties: {
             id: {
                 type: 'string',
-                description: 'ID del administrador a deshabilitar',
                 pattern: '^[0-9a-fA-F]{24}$',
                 errorMessage: {
                     pattern: 'El ID debe ser un ObjectId válido'
@@ -618,8 +616,11 @@ export const getAllAdminsSchema = {
                     lastName: { type: 'string', example: 'Pérez' },
                     email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                     phone: { type: 'string', example: '0987654321' },
+                    rol: { type: 'string', example: 'Administrador' },
                     status: { type: 'boolean', example: true },
-                    status: { type: 'boolean', example: true }
+                    createdDate: { type: 'string', format: 'date-time', example: '2024-06-12T10:00:00Z' },
+                    enableDate: { type: 'string', format: 'date-time', example: '2024-06-15T08:30:00Z' },
+                    disableDate: { type: 'string', format: 'date-time', nullable: true, example: null }
                 }
             }
         },
@@ -669,8 +670,44 @@ export const getAdminByIdSchema = {
                 lastName: { type: 'string', example: 'Pérez' },
                 email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
                 phone: { type: 'string', example: '0987654321' },
-                rol: { type: 'string', example: 'Admin' },
-                status: { type: 'boolean', example: true }
+                rol: { type: 'string', example: 'Administrador' },
+                status: { type: 'boolean', example: true },
+                createdDate: { type: 'string', format: 'date-time', example: '2024-06-12T10:00:00Z' },
+                updatedDate: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T14:20:00Z' },
+                enableDate: { type: 'string', format: 'date-time', example: '2024-06-13T09:00:00Z' },
+                disableDate: { type: 'string', format: 'date-time', nullable: true, example: null },
+                createFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Luis' },
+                        lastName: { type: 'string', example: 'Torres' }
+                    }
+                },
+                updateFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'María' },
+                        lastName: { type: 'string', example: 'Lozano' }
+                    }
+                },
+                enableFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Carlos' },
+                        lastName: { type: 'string', example: 'Romero' }
+                    }
+                },
+                disableFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string', example: 'Lucía' },
+                        lastName: { type: 'string', example: 'Mendoza' }
+                    }
+                }
             }
         },
         400: {
@@ -713,14 +750,50 @@ export const getAdminProfileSchema = {
             description: 'Perfil del administrador',
             type: 'object',
             properties: {
-                _id: { type: 'string', example: '64a5f5c8e4a4a1234567890a' },
-                cedula: { type: 'string', example: '0102030405' },
-                name: { type: 'string', example: 'Juan' },
-                lastName: { type: 'string', example: 'Pérez' },
-                email: { type: 'string', example: 'juan.perez01@epn.edu.ec' },
-                phone: { type: 'string', example: '0987654321' },
-                rol: { type: 'string', example: 'Admin'},
-                status: { type: 'boolean', example: true }
+                _id: { type: 'string' },
+                cedula: { type: 'string' },
+                name: { type: 'string' },
+                lastName: { type: 'string' },
+                email: { type: 'string' },
+                phone: { type: 'string' },
+                rol: { type: 'string' },
+                status: { type: 'boolean' },
+                createdDate: { type: 'string', format: 'date-time' },
+                updatedDate: { type: 'string', format: 'date-time', nullable: true },
+                enableDate: { type: 'string', format: 'date-time' },
+                disableDate: { type: 'string', format: 'date-time', nullable: true },
+                createFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string' },
+                        lastName: { type: 'string' }
+                    }
+                },
+                updateFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string' },
+                        lastName: { type: 'string' }
+                    }
+                },
+                enableFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string' },
+                        lastName: { type: 'string' }
+                    }
+                },
+                disableFor: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        name: { type: 'string' },
+                        lastName: { type: 'string' }
+                    }
+                }
             }
         },
         401: {
@@ -739,3 +812,4 @@ export const getAdminProfileSchema = {
         }
     }
 };
+

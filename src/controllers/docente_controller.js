@@ -535,5 +535,3 @@ export {
     getDocenteById,
     getDocenteProfile
 };
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGJhMWM1MGIzOWY5Zjk3NTlkOTAzMCIsInJvbCI6ImFkbWluaXN0cmFkb3IiLCJpYXQiOjE3NDU5NzM1OTUsImV4cCI6MTc0NjA1OTk5NX0.1pafxTP9iMpoTtxtKH4y_XzRsBa6EWgWz504S2l2mu8

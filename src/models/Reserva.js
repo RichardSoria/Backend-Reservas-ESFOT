@@ -21,7 +21,7 @@ const reservaSchema = new mongoose.Schema({
     placeID: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, "El ID del lugar es requerido"],
-        ref: "placeType"
+        refPath: "placeType"
     },
     placeType: {
         type: String,

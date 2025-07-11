@@ -200,7 +200,7 @@ const approveReserva = async (req, reply) => {
         reserva.reason = reason;
         reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que aprueba la reserva
         reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
-        await reserva.save();
+        await reserva.save({ validateBeforeSave: false });
 
         return reply.code(200).send({ message: 'Reserva aprobada exitosamente', reserva });
 
@@ -238,7 +238,7 @@ const rejectReserva = async (req, reply) => {
         reserva.reason = reason;
         reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que rechaza la reserva
         reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
-        await reserva.save();
+        await reserva.save({ validateBeforeSave: false });
 
         return reply.code(200).send({ message: 'Reserva rechazada exitosamente', reserva });
 
@@ -276,8 +276,8 @@ const cancelReserva = async (req, reply) => {
         reserva.status = 'Cancelada';
         reserva.reason = reason;
         reserva.cancellationDate = Date.now(); // Asignar la fecha de cancelación
-        await reserva.save();
-
+        await reserva.save({ validateBeforeSave: false });
+        
         return reply.code(200).send({ message: 'Reserva cancelada exitosamente', reserva });
 
     } catch (error) {

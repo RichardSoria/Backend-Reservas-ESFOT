@@ -93,7 +93,7 @@ export const registerEstudianteSchema = {
             },
             phone: {
                 type: 'string',
-                pattern: '^09[89]\\d{7}$'
+                pattern: '09[2-9][0-9]{7}$'
             },
             career: {
                 type: 'string'
@@ -165,7 +165,7 @@ export const updateEstudianteSchema = {
             },
             phone: {
                 type: 'string',
-                pattern: '^09[89]\\d{7}$'
+                pattern: '09[2-9][0-9]{7}$'
             },
             career: { type: 'string' }
         }

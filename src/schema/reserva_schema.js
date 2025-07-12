@@ -470,9 +470,7 @@ export const getReservaByIdSchema = {
                 userAuthorizationID: { type: 'string', nullable: true, example: '64e5c72f1e2a941234567890' },
                 authorizationDate: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-10T10:30:00Z' },
                 cancellationDate: { type: 'string', format: 'date-time', nullable: true, example: null },
-                createdAt: { type: 'string', format: 'date-time', example: '2025-07-08T14:00:00Z' },
-                updatedAt: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-09T09:45:00Z' },
-
+                createdDate: { type: 'string', format: 'date-time', example: '2025-07-08T14:00:00Z' },
                 lugarNombre: { type: 'string', example: 'Aula B203' },
                 solicitante: { type: 'string', example: 'Ana Martínez' },
                 autorizadoPor: { type: 'string', nullable: true, example: 'Carlos Romero' }

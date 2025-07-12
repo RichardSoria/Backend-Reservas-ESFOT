@@ -123,7 +123,7 @@ export const registerDocenteSchema = {
                 type: 'string',
                 minLength: 10,
                 maxLength: 10,
-                pattern: '09[89][0-9]{7}$',
+                pattern: '09[2-9][0-9]{7}$',
                 errorMessage: {
                     pattern: 'El número debe empezar con 098 o 099 y tener 10 dígitos',
                     minLength: 'El campo de teléfono es obligatorio',
@@ -227,7 +227,7 @@ export const updateDocenteSchema = {
             name: { type: 'string', pattern: '^[\\p{L}]{1,20}$' },
             lastName: { type: 'string', pattern: '^[\\p{L}]{1,20}$' },
             email: { type: 'string', pattern: "^[a-z]+\\.[a-z]+((0[1-9]|[1-9][0-9])?)@epn\\.edu\\.ec$" },
-            phone: { type: 'string', pattern: '09[89][0-9]{7}$' },
+            phone: { type: 'string', pattern: '09[2-9][0-9]{7}$' },
             career: { type: 'string' },
             otherFaculty: { type: 'string' }
         },

@@ -109,20 +109,7 @@ fastify.get('/api/auth/status', {
   schema: {
     tags: ['Autenticación'],
     summary: 'Verificar autenticación del usuario',
-    description: 'Devuelve si el usuario está autenticado basándose en la cookie `tokenJWT`',
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          authenticated: { type: 'boolean' },
-          user: {
-            type: 'object',
-            nullable: true,
-            description: 'Información del usuario si está autenticado'
-          }
-        }
-      }
-    }
+    description: 'Devuelve si el usuario está autenticado basándose en la cookie firmada `tokenJWT`'
   }
 }, async (req, reply) => {
   if (!req.unsignCookie || !req.cookies.tokenJWT) {
@@ -143,6 +130,7 @@ fastify.get('/api/auth/status', {
   }
 });
 
+
 fastify.post('/api/logout', {
   preHandler: verifyAuth,
   schema: {
@@ -159,7 +147,7 @@ fastify.post('/api/logout', {
     }
   }
 }, async (req, reply) => {
-  reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada' });
+  reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada exitosamente' });
 });
 
 

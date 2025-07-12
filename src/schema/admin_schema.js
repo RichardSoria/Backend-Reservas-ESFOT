@@ -741,6 +741,7 @@ export const getAdminByIdSchema = {
     }
 };
 
+
 export const getAdminProfileSchema = {
     tags: ['Administradores'],
     summary: 'Obtener perfil del administrador autenticado',

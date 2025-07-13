@@ -60,19 +60,20 @@ await fastify.register(fastifyJWT, { secret: fastify.config.JWT_SECRET });
 await fastify.register(swagger, {
   openapi: {
     info: {
-      title: 'API RESTful Reservas-ESFOT',
+      title: 'API RESTfull Reservas-ESFOT',
       version: '1.0.0',
     },
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'tokenJWT',
+          description: 'Autenticación mediante cookie firmada con JWT'
         }
       }
     },
-    security: [{ bearerAuth: [] }]
+    security: [{ cookieAuth: [] }]
   }
 });
 

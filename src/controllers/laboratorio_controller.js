@@ -1,4 +1,4 @@
-import Laboratorio from '../models/Laboratorio.js';
+import Laboratorio from '../models/laboratorio.js';
 import mongoose from 'mongoose';
 
 // Método para crear un nuevo laboratorio
@@ -131,7 +131,7 @@ const updateLaboratorio = async (req, reply) => {
             capacity,
             size,
             image,
-            updatedBy: adminLogged._id,
+            updateBy: adminLogged._id,
             updatedDate: new Date()
         }, { new: true });
 
@@ -143,7 +143,6 @@ const updateLaboratorio = async (req, reply) => {
     }
 }
 
-// Método para habilitar un laboratorio
 const enableLaboratorio = async (req, reply) => {
     try {
         const { id } = req.params;
@@ -153,28 +152,34 @@ const enableLaboratorio = async (req, reply) => {
             return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
         }
 
-        // Validación del ID del laboratorio
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "ID de laboratorio inválido" });
         }
 
-        // Verificación de la existencia del laboratorio
         const laboratorioBDD = await Laboratorio.findById(id);
         if (!laboratorioBDD) {
             return reply.code(404).send({ message: "El laboratorio no existe" });
         }
 
-        // Habilitación del laboratorio
-        await Laboratorio.findByIdAndUpdate(id, { status: true, enableBy: adminLogged._id }, { new: true });
+        await Laboratorio.findByIdAndUpdate(
+            id,
+            {
+                status: true,
+                enableBy: adminLogged._id,
+                enableDate: new Date() // ✅ Registrar la fecha de habilitación
+            },
+            { new: true }
+        );
+
         return reply.code(200).send({ message: "Laboratorio habilitado con éxito" });
 
     } catch (error) {
         console.error("Error al habilitar el laboratorio:", error);
         return reply.code(500).send({ message: "Error al habilitar el laboratorio" });
     }
-}
+};
 
-// Método para deshabilitar un laboratorio
+
 const disableLaboratorio = async (req, reply) => {
     try {
         const { id } = req.params;
@@ -184,26 +189,32 @@ const disableLaboratorio = async (req, reply) => {
             return reply.code(401).send({ message: "No tienes permiso para realizar esta acción" });
         }
 
-        // Validación del ID del laboratorio
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return reply.code(400).send({ message: "ID de laboratorio inválido" });
         }
 
-        // Verificación de la existencia del laboratorio
         const laboratorioBDD = await Laboratorio.findById(id);
         if (!laboratorioBDD) {
             return reply.code(404).send({ message: "El laboratorio no existe" });
         }
 
-        // Deshabilitación del laboratorio
-        await Laboratorio.findByIdAndUpdate(id, { status: false, disableBy: adminLogged._id }, { new: true });
+        await Laboratorio.findByIdAndUpdate(
+            id,
+            {
+                status: false,
+                disableBy: adminLogged._id,
+                disableDate: new Date()
+            },
+            { new: true }
+        );
+
         return reply.code(200).send({ message: "Laboratorio deshabilitado con éxito" });
 
     } catch (error) {
         console.error("Error al deshabilitar el laboratorio:", error);
         return reply.code(500).send({ message: "Error al deshabilitar el laboratorio" });
     }
-}
+};
 
 // Método para obtener todos los laboratorios
 const getAllLaboratorios = async (req, reply) => {

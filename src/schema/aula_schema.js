@@ -13,6 +13,7 @@ export const createAulaSchema = {
             description: {
                 type: 'string',
                 maxLength: 100,
+                pattern: '^[\\p{L}\\d\\s.,\'"-]{1,100}$',
             },
             capacity: {
                 type: 'number',

@@ -298,7 +298,7 @@ const disableDocente = async (req, reply) => {
         // Deshabilitar al docente
         docenteBDD.status = false;
         docenteBDD.disableFor = adminLogged._id;
-        docenteBDD.updatedDate = Date.now();
+        docenteBDD.disableDate = Date.now();
 
         // Enviar correo de deshabilitación
         await sendMailDisableUser(docenteBDD.email, docenteBDD.name, docenteBDD.lastName);

@@ -7,8 +7,8 @@ export const createLaboratorioSchema = {
         required: ['codigo', 'name', 'description', 'capacity', 'equipmentPC', 'equipmentProyector', 'equipmentInteractiveScreen'],
         properties: {
             codigo: { type: 'string', pattern: '^E\\d{2}/PB\\d/E\\d{3}$' },
-            name: { type: 'string', pattern: '^[\\p{L}]{1,20}$', },
-            description: { type: 'string', pattern: '^[\\p{L}]{1,100}$', },
+            name: { type: 'string', pattern: "^[\\p{L}\\d\\s.,'-]{1,30}$", },
+            description: { type: 'string', pattern: "^[\\p{L}\\d\\s.,'\"-]{1,100}$", },
             capacity: { type: 'number' },
             equipmentPC: { type: 'boolean' },
             equipmentProyector: { type: 'boolean' },
@@ -60,8 +60,8 @@ export const updateLaboratorioSchema = {
         type: 'object',
         properties: {
             codigo: { type: 'string', pattern: '^E\\d{2}/PB\\d/E\\d{3}$' },
-            name: { type: 'string', pattern: '^[\\p{L}]{1,20}$', },
-            description: { type: 'string', pattern: '^[\\p{L}]{1,100}$', },
+            name: { type: 'string', pattern: "^[\\p{L}\\d\\s.,'-]{1,30}$", },
+            description: { type: 'string', pattern: "^[\\p{L}\\d\\s.,'\"-]{1,100}$", },
             capacity: { type: 'number' },
             equipmentPC: { type: 'boolean' },
             equipmentProyector: { type: 'boolean' },
@@ -231,7 +231,7 @@ export const getAllLaboratoriosSchema = {
 export const getLaboratorioByIdSchema = {
     tags: ['Laboratorios'],
     summary: 'Obtener laboratorio por ID',
-    description: 'Devuelve la información detallada de un laboratorio, incluyendo sus atributos y campos de auditoría.',
+    description: 'Devuelve la información detallada de un laboratorio, incluyendo sus atributos, estado y campos de auditoría.',
 
     params: {
         type: 'object',
@@ -239,7 +239,8 @@ export const getLaboratorioByIdSchema = {
         properties: {
             id: {
                 type: 'string',
-                pattern: '^[0-9a-fA-F]{24}$'
+                pattern: '^[0-9a-fA-F]{24}$',
+                description: 'ID de MongoDB del laboratorio'
             }
         }
     },
@@ -249,50 +250,55 @@ export const getLaboratorioByIdSchema = {
             description: 'Laboratorio encontrado',
             type: 'object',
             properties: {
-                _id: { type: 'string', example: '64a5f5c8e4a4a1234567890a' },
-                codigo: { type: 'string', example: 'E03/PB2' },
-                name: { type: 'string', example: 'Laboratorio de Electrónica' },
-                description: { type: 'string', example: 'Espacio con estaciones de soldadura y multímetros digitales.' },
+                _id: { type: 'string', example: '68734eecd4035606450517be' },
+                codigo: { type: 'string', example: 'E21/PB2/E012' },
+                name: { type: 'string', example: 'TICs 25A' },
+                description: { type: 'string', example: 'Aula equipada con 30 computadoras, aire acondicionado y proyector, además de ventanas.' },
                 capacity: { type: 'integer', example: 25 },
                 equipmentPC: { type: 'boolean', example: true },
-                equipmentProyector: { type: 'boolean', example: false },
-                equipmentInteractiveScreen: { type: 'boolean', example: true },
-                status: { type: 'boolean', example: true },
-                numberReservations: { type: 'integer'},
-                createdDate: { type: 'string', format: 'date-time', example: '2025-06-10T12:00:00Z' },
-                updatedDate: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-02T10:30:00Z' },
-                enableDate: { type: 'string', format: 'date-time', example: '2025-06-11T08:30:00Z' },
+                equipmentProyector: { type: 'boolean', example: true },
+                equipmentInteractiveScreen: { type: 'boolean', example: false },
+                status: { type: 'boolean', example: false },
+                numberReservations: { type: 'integer', example: 1 },
+                createdDate: { type: 'string', format: 'date-time', example: '2025-07-13T06:14:25.556Z' },
+                updatedDate: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-13T06:18:01.009Z' },
+                enableDate: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-13T06:14:25.556Z' },
                 disableDate: { type: 'string', format: 'date-time', nullable: true, example: null },
+
                 createBy: {
                     type: 'object',
                     nullable: true,
                     properties: {
-                        name: { type: 'string', example: 'Luis' },
-                        lastName: { type: 'string', example: 'García' }
+                        _id: { type: 'string', example: '687345563078b77a49d85736' },
+                        name: { type: 'string', example: 'Richard' },
+                        lastName: { type: 'string', example: 'Soria' }
                     }
                 },
                 updateBy: {
                     type: 'object',
                     nullable: true,
                     properties: {
-                        name: { type: 'string', example: 'María' },
-                        lastName: { type: 'string', example: 'Lozano' }
+                        _id: { type: 'string', example: '687345563078b77a49d85736' },
+                        name: { type: 'string', example: 'Richard' },
+                        lastName: { type: 'string', example: 'Soria' }
                     }
                 },
                 enableBy: {
                     type: 'object',
                     nullable: true,
                     properties: {
-                        name: { type: 'string', example: 'Carlos' },
-                        lastName: { type: 'string', example: 'Romero' }
+                        _id: { type: 'string', example: '687345563078b77a49d85736' },
+                        name: { type: 'string', example: 'Richard' },
+                        lastName: { type: 'string', example: 'Soria' }
                     }
                 },
                 disableBy: {
                     type: 'object',
                     nullable: true,
                     properties: {
-                        name: { type: 'string', example: 'Lucía' },
-                        lastName: { type: 'string', example: 'Mendoza' }
+                        _id: { type: 'string', example: '687345563078b77a49d85736' },
+                        name: { type: 'string', example: 'Richard' },
+                        lastName: { type: 'string', example: 'Soria' }
                     }
                 }
             }
@@ -323,4 +329,3 @@ export const getLaboratorioByIdSchema = {
         }
     }
 };
-

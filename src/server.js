@@ -129,7 +129,13 @@ fastify.post('/api/logout', {
     }
   }
 }, async (req, reply) => {
-  reply.clearCookie('tokenJWT', { path: '/' }).code(200).send({ message: 'Sesión cerrada exitosamente' });
+  reply.clearCookie('tokenJWT', {
+    path: '/',
+    secure: true,
+    sameSite: 'none',
+    signed: true,
+    httpOnly: true
+  }).code(200).send({ message: 'Sesión cerrada exitosamente' });
 });
 
 

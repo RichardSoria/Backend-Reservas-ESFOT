@@ -56,17 +56,6 @@ await fastify.register(cors, {
 
 await fastify.register(fastifyJWT, { secret: fastify.config.JWT_SECRET });
 
-await fastify.register(fastifyMultipart, {
-  addToBody: true,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  onFile: (field, file) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    if (!allowedTypes.includes(file.mimetype)) {
-      throw new Error('Tipo de archivo no permitido. Solo JPG, JPEG o PNG');
-    }
-  }
-});
-
 // Swagger
 await fastify.register(swagger, {
   openapi: {
@@ -92,13 +81,6 @@ await fastify.register(swaggerUI, {
   uiConfig: { docExpansion: 'list', deepLinking: true },
   staticCSP: true,
   transformStaticCSP: (header) => header
-});
-
-// Cloudinary
-cloudinary.config({
-  cloud_name: fastify.config.CLOUDINARY_CLOUD_NAME,
-  api_key: fastify.config.CLOUDINARY_API_KEY,
-  api_secret: fastify.config.CLOUDINARY_API_SECRET
 });
 
 // Conexión DB
@@ -129,7 +111,6 @@ fastify.get('/api/auth/status', {
     return reply.send({ authenticated: false });
   }
 });
-
 
 fastify.post('/api/logout', {
   preHandler: verifyAuth,

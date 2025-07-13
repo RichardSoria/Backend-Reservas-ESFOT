@@ -258,6 +258,7 @@ export const getLaboratorioByIdSchema = {
                 equipmentProyector: { type: 'boolean', example: false },
                 equipmentInteractiveScreen: { type: 'boolean', example: true },
                 status: { type: 'boolean', example: true },
+                numberReservations: { type: 'integer'},
                 createdDate: { type: 'string', format: 'date-time', example: '2025-06-10T12:00:00Z' },
                 updatedDate: { type: 'string', format: 'date-time', nullable: true, example: '2025-07-02T10:30:00Z' },
                 enableDate: { type: 'string', format: 'date-time', example: '2025-06-11T08:30:00Z' },

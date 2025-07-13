@@ -5,7 +5,17 @@ import Admin from '../models/Admin.js';
 import Docente from '../models/Docente.js';
 import Estudiante from '../models/Estudiante.js';
 import Aula from '../models/Aula.js';
-import Laboratorio from '../models/laboratorio.js';
+import Laboratorio from '../models/laboratorio.js'; 3
+import { 
+    sendMailReservaUsuario, 
+    sendMailReservaAdmin, 
+    sendMailReservaAsignadaUsuario, 
+    sendMailReservaAsignadaAdmin,
+    sendMailReservaAprobada,
+    sendMailReservaRechazada,
+    sendMailReservaCanceladaUsuario,
+    sendMailReservaCanceladaAdmins
+} from "../config/nodemailer.js";
 
 // Método para crear una nueva reserva	
 const createReserva = async (req, reply) => {
@@ -80,6 +90,22 @@ const createReserva = async (req, reply) => {
             { _id: place._id },
             { $inc: { numberReservations: 1 } }
         );
+
+        const reservaData = {
+            placeName: place.name,
+            reservationDate: moment(parsedReservationDate).format('DD/MM/YYYY'),
+            startTime,
+            endTime,
+            purpose,
+            description
+        };
+
+        // Enviar a todos los admins
+        const admins = await Admin.find({});
+        const adminEmails = admins.map(admin => admin.email);
+        await sendMailReservaAdmin(adminEmails, reservaData, `${userLogged.name} ${userLogged.lastName}`, userLogged.rol);
+        // Enviar al usuario
+        await sendMailReservaUsuario(userLogged.email, userLogged.name, userLogged.lastName, reservaData);
 
         return reply.code(201).send({ message: 'Reserva creada exitosamente', reserva: newReserva });
     } catch (error) {
@@ -166,6 +192,30 @@ const assignReserva = async (req, reply) => {
             { $inc: { numberReservations: 1 } }
         );
 
+        const reservaData = {
+            placeName: place.name,
+            reservationDate: moment(parsedReservationDate).format('DD/MM/YYYY'),
+            startTime,
+            endTime,
+            purpose,
+            description
+        };
+
+        const userName = `${user.name} ${user.lastName}`;
+        const userEmail = user.email;
+
+        // Enviar correo al usuario asignado
+        await sendMailReservaAsignadaUsuario(userEmail, user.name, user.lastName, reservaData);
+
+        // Enviar correo al administrador que hizo la asignación
+        await sendMailReservaAsignadaAdmin(
+            adminLogged.email,
+            `${adminLogged.name} ${adminLogged.lastName}`,
+            reservaData,
+            userName,
+            user.rol
+        );
+
         return reply.code(201).send({ message: 'Reserva creada exitosamente', reserva: newReserva });
     } catch (error) {
         console.error('Error al crear la reserva:', error);
@@ -173,122 +223,139 @@ const assignReserva = async (req, reply) => {
     }
 }
 
+// Método para aprobar una reserva
 const approveReserva = async (req, reply) => {
     try {
         const adminLogged = req.adminBDD;
         const { id } = req.params;
         const { reason } = req.body;
 
-        // Verificar si el usuario es un administrador
-        if (!adminLogged) {
-            return reply.code(403).send({ message: 'No tienes permiso para aprobar reservas' });
-        }
+        if (!adminLogged) return reply.code(403).send({ message: 'No tienes permiso para aprobar reservas' });
+        if (!mongoose.Types.ObjectId.isValid(id)) return reply.code(400).send({ message: 'El ID de reserva no es válido' });
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return reply.code(400).send({ message: 'El ID de reserva no es válido' });
-        }
-
-        // Verificar si la reserva existe
         const reserva = await Reserva.findById(id);
+        if (!reserva) return reply.code(404).send({ message: 'La reserva no existe' });
 
-        if (!reserva) {
-            return reply.code(404).send({ message: 'La reserva no existe' });
-        }
-
-        // Actualizar el estado de la reserva a "aprobada"
+        // Actualizar estado
         reserva.status = 'Aprobada';
         reserva.reason = reason;
-        reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que aprueba la reserva
-        reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
+        reserva.userAuthorizationID = adminLogged._id;
+        reserva.authorizationDate = Date.now();
         await reserva.save({ validateBeforeSave: false });
+
+        // Obtener lugar y usuario
+        const place = await Aula.findById(reserva.placeID) || await Laboratorio.findById(reserva.placeID);
+        const user = await Admin.findById(reserva.userID) || await Docente.findById(reserva.userID) || await Estudiante.findById(reserva.userID);
+
+        const reservaData = {
+            placeName: place.name,
+            reservationDate: moment(reserva.reservationDate).format('DD/MM/YYYY'),
+            startTime: reserva.startTime,
+            endTime: reserva.endTime,
+            purpose: reserva.purpose,
+            description: reserva.description
+        };
+
+        await sendMailReservaAprobada(user.email, user.name, user.lastName, reservaData, reason);
 
         return reply.code(200).send({ message: 'Reserva aprobada exitosamente', reserva });
 
     } catch (error) {
         console.error('Error al aprobar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-
     }
-}
+};
 
+// Método para rechazar una reserva
 const rejectReserva = async (req, reply) => {
     try {
         const adminLogged = req.adminBDD;
         const { id } = req.params;
         const { reason } = req.body;
 
-        // Verificar si el usuario es un administrador
-        if (!adminLogged) {
-            return reply.code(403).send({ message: 'No tienes permiso para rechazar reservas' });
-        }
+        if (!adminLogged) return reply.code(403).send({ message: 'No tienes permiso para rechazar reservas' });
+        if (!mongoose.Types.ObjectId.isValid(id)) return reply.code(400).send({ message: 'El ID de reserva no es válido' });
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return reply.code(400).send({ message: 'El ID de reserva no es válido' });
-        }
-
-        // Verificar si la reserva existe
         const reserva = await Reserva.findById(id);
+        if (!reserva) return reply.code(404).send({ message: 'La reserva no existe' });
 
-        if (!reserva) {
-            return reply.code(404).send({ message: 'La reserva no existe' });
-        }
-
-        // Actualizar el estado de la reserva a "rechazada"
         reserva.status = 'Rechazada';
         reserva.reason = reason;
-        reserva.userAuthorizationID = adminLogged._id; // Asignar el ID del administrador que rechaza la reserva
-        reserva.authorizationDate = Date.now(); // Asignar la fecha de autorización
+        reserva.userAuthorizationID = adminLogged._id;
+        reserva.authorizationDate = Date.now();
         await reserva.save({ validateBeforeSave: false });
+
+        const place = await Aula.findById(reserva.placeID) || await Laboratorio.findById(reserva.placeID);
+        const user = await Admin.findById(reserva.userID) || await Docente.findById(reserva.userID) || await Estudiante.findById(reserva.userID);
+
+        const reservaData = {
+            placeName: place.name,
+            reservationDate: moment(reserva.reservationDate).format('DD/MM/YYYY'),
+            startTime: reserva.startTime,
+            endTime: reserva.endTime,
+            purpose: reserva.purpose,
+            description: reserva.description
+        };
+
+        await sendMailReservaRechazada(user.email, user.name, user.lastName, reservaData, reason);
 
         return reply.code(200).send({ message: 'Reserva rechazada exitosamente', reserva });
 
     } catch (error) {
         console.error('Error al rechazar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-
     }
-}
+};
 
+// Método para cancelar una reserva
 const cancelReserva = async (req, reply) => {
     try {
         const { id } = req.params;
         const { reason } = req.body;
         const userLogged = req.adminBDD || req.docenteBDD || req.estudianteBDD;
 
-        // Verificar si el usuario está autenticado
-        if (!userLogged) {
-            return reply.code(403).send({ message: 'No tienes permiso para cancelar reservas' });
-        }
+        if (!userLogged) return reply.code(403).send({ message: 'No tienes permiso para cancelar reservas' });
+        if (!mongoose.Types.ObjectId.isValid(id)) return reply.code(400).send({ message: 'El ID de reserva no es válido' });
 
-
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return reply.code(400).send({ message: 'El ID de reserva no es válido' });
-        }
-
-        // Verificar si la reserva existe
         const reserva = await Reserva.findById(id);
+        if (!reserva) return reply.code(404).send({ message: 'La reserva no existe' });
 
-        if (!reserva) {
-            return reply.code(404).send({ message: 'La reserva no existe' });
-        }
-
-        // Actualizar el estado de la reserva a "cancelada"
         reserva.status = 'Cancelada';
         reserva.reason = reason;
-        reserva.cancellationDate = Date.now(); // Asignar la fecha de cancelación
+        reserva.cancellationDate = Date.now();
         await reserva.save({ validateBeforeSave: false });
-        
+
+        const place = await Aula.findById(reserva.placeID) || await Laboratorio.findById(reserva.placeID);
+        const user = await Admin.findById(reserva.userID) || await Docente.findById(reserva.userID) || await Estudiante.findById(reserva.userID);
+
+        const reservaData = {
+            placeName: place.name,
+            reservationDate: moment(reserva.reservationDate).format('DD/MM/YYYY'),
+            startTime: reserva.startTime,
+            endTime: reserva.endTime,
+            purpose: reserva.purpose,
+            description: reserva.description
+        };
+
+        // Correo al usuario que tenía la reserva
+        await sendMailReservaCanceladaUsuario(user.email, user.name, user.lastName, reservaData, reason);
+
+        // Correos a todos los admins
+        const admins = await Admin.find({});
+        const adminEmails = admins.map(a => a.email);
+        const userName = `${user.name} ${user.lastName}`;
+
+        await sendMailReservaCanceladaAdmins(adminEmails, reservaData, userName, reason);
+
         return reply.code(200).send({ message: 'Reserva cancelada exitosamente', reserva });
 
     } catch (error) {
         console.error('Error al cancelar la reserva:', error);
         return reply.code(500).send({ message: 'Error interno del servidor' });
-
     }
-}
+};
 
 // Métpdpdo para obtener todas las reservas
-
 const getAllReservas = async (req, reply) => {
     try {
         const reservas = await Reserva.find().lean();

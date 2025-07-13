@@ -28,7 +28,7 @@ const loginAdmin = async (req, reply) => {
         const verifyPassword = await adminBDD.matchPassword(password);
 
         // Si la cuenta sigue bloqueada
-        if (adminBDD.lockUntil && adminBDD.lockUntil > new Date()) {
+        if (adminBDD.lockUntil && adminBDD.lockUntil > new Date() && verifyPassword) {
             return reply.code(401).send({
                 message: `El usuario está bloqueado. Intente nuevamente en ${moment(adminBDD.lockUntil).tz("America/Guayaquil").format("HH:mm:ss")}`
             });
@@ -234,7 +234,7 @@ const enableAdmin = async (req, reply) => {
         adminBDD.enableFor = adminLogged._id;
         await adminBDD.save();
         // Enviar correo al administrador
-        sendMailEnableUser(adminBDD.email, adminBDD.name, adminBDD.lastName, adminLogged.name, adminLogged.lastName);
+        sendMailEnableUser(adminBDD.email, adminBDD.name, adminBDD.lastName);
         return reply.code(200).send({ message: "Administrador habilitado con éxito" });
 
     } catch (error) {
@@ -273,7 +273,7 @@ const disableAdmin = async (req, reply) => {
         adminBDD.disableFor = adminLogged._id;
         await adminBDD.save();
         // Enviar correo al administrador
-        sendMailDisableUser(adminBDD.email, adminBDD.name, adminBDD.lastName, adminLogged.name, adminLogged.lastName);
+        sendMailDisableUser(adminBDD.email, adminBDD.name, adminBDD.lastName);
         return reply.code(200).send({ message: "Administrador deshabilitado con éxito" });
     } catch (error) {
         console.error("Error al deshabilitar administrador:", error);

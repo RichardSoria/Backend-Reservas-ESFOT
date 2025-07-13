@@ -28,7 +28,7 @@ const loginDocente = async (req, reply) => {
         const verifyPassword = await docenteBDD.matchPassword(password);
 
         // Si la cuenta sigue bloqueada
-        if (docenteBDD.lockUntil && docenteBDD.lockUntil > new Date()) {
+        if (docenteBDD.lockUntil && docenteBDD.lockUntil > new Date() && verifyPassword) {
             return reply.code(401).send({
                 message: `El usuario está bloqueado. Intente nuevamente en ${moment(docenteBDD.lockUntil).tz("America/Guayaquil").format("HH:mm:ss")}`
             });
@@ -335,7 +335,7 @@ const recoverPassword = async (req, reply) => {
         const token = await docenteBDD.createResetToken();
         const resetTokenExpire = moment(docenteBDD.resetTokenExpire).tz("America/Guayaquil").format("HH:mm:ss");
 
-        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol, resetTokenExpire);
+        sendMailRecoverPassword(email, token, docenteBDD.name, docenteBDD.lastName, resetTokenExpire);
 
         return reply.code(200).send({
             message: "Si el correo está registrado, se ha enviado un enlace de recuperación."
@@ -400,7 +400,7 @@ const sendRecoverPassword = async (req, reply) => {
 
         // Guardar los cambios en la base de datos
         await docenteBDD.save();
-        sendMailNewPassword(docenteBDD.email, newPassword, docenteBDD.name, docenteBDD.lastName, docenteBDD.rol);
+        sendMailNewPassword(docenteBDD.email, newPassword, docenteBDD.name, docenteBDD.lastName);
         return reply.code(200).send({ message: "Contraseña de recuperación enviada." });
     } catch (error) {
         console.error("Error al enviar el correo de recuperación:", error);

@@ -18,7 +18,7 @@ const loginEstudiante = async (req, reply) => {
         }
 
         // Si el usuario esta bloqueado y ya paso el tiempo de bloqueo
-        if (estudianteBDD.lockUntil && estudianteBDD.lockUntil > Date.now()) {
+        if (estudianteBDD.lockUntil && estudianteBDD.lockUntil > Date.now() && verifyPassword) {
             estudianteBDD.loginAttempts = 0;
             estudianteBDD.lockUntil = null;
             await estudianteBDD.save();
@@ -321,7 +321,7 @@ const recoverPassword = async (req, reply) => {
         const token = await estudianteBDD.createResetToken();
         const resetTokenExpire = moment(estudianteBDD.resetTokenExpire).tz("America/Guayaquil").format("HH:mm:ss");
 
-        sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, estudianteBDD.rol, resetTokenExpire);
+        sendMailRecoverPassword(email, token, estudianteBDD.name, estudianteBDD.lastName, resetTokenExpire);
 
         return reply.code(200).send({
             message: "Si el correo está registrado, se ha enviado un enlace de recuperación."

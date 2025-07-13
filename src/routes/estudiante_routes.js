@@ -26,7 +26,7 @@ import {
   getAllEstudiantesSchema,
   getEstudianteByIdSchema,
   getEstudianteProfileSchema
-} from '../schema/estudiante_schema.js';
+} from '../schema/estudiante_Schema.js';
 
 import verifyAuth from "../middlewares/authentication.js";
 

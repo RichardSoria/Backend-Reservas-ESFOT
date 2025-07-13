@@ -57,8 +57,8 @@ const loginDocente = async (req, reply) => {
             return reply
                 .setCookie('tokenJWT', tokenJWT, {
                     httpOnly: true,
-                    secure: false,
-                    sameSite: 'Strict',
+                    secure: true,
+                    sameSite: 'none',
                     path: '/',
                     maxAge: 60 * 60 * 24,
                     signed: true

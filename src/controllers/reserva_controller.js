@@ -5,7 +5,7 @@ import Admin from '../models/Admin.js';
 import Docente from '../models/Docente.js';
 import Estudiante from '../models/Estudiante.js';
 import Aula from '../models/Aula.js';
-import Laboratorio from '../models/laboratorio.js'; 3
+import Laboratorio from '../models/Laboratorio.js';
 import { 
     sendMailReservaUsuario, 
     sendMailReservaAdmin, 

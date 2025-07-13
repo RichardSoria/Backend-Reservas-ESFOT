@@ -1,4 +1,4 @@
-import Laboratorio from '../models/laboratorio.js';
+import Laboratorio from '../models/Laboratorio.js';
 import mongoose from 'mongoose';
 
 // Método para crear un nuevo laboratorio

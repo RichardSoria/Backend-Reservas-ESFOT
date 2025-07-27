@@ -618,9 +618,7 @@ export const getAllAdminsSchema = {
                     phone: { type: 'string', example: '0987654321' },
                     rol: { type: 'string', example: 'Administrador' },
                     status: { type: 'boolean', example: true },
-                    createdDate: { type: 'string', format: 'date-time', example: '2024-06-12T10:00:00Z' },
-                    enableDate: { type: 'string', format: 'date-time', example: '2024-06-15T08:30:00Z' },
-                    disableDate: { type: 'string', format: 'date-time', nullable: true, example: null }
+                    lastLogin: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T08:00:00Z' },
                 }
             }
         },
@@ -672,10 +670,12 @@ export const getAdminByIdSchema = {
                 phone: { type: 'string', example: '0987654321' },
                 rol: { type: 'string', example: 'Administrador' },
                 status: { type: 'boolean', example: true },
+                lastLogin: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T14:20:00Z' },
+                loginAttempts: { type: 'integer', example: 5 },
                 createdDate: { type: 'string', format: 'date-time', example: '2024-06-12T10:00:00Z' },
                 updatedDate: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T14:20:00Z' },
                 enableDate: { type: 'string', format: 'date-time', example: '2024-06-13T09:00:00Z' },
-                disableDate: { type: 'string', format: 'date-time', nullable: true, example: null },
+                disableDate: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T14:20:00Z' },
                 createFor: {
                     type: 'object',
                     nullable: true,

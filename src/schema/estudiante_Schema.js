@@ -550,7 +550,8 @@ export const getAllEstudiantesSchema = {
                     career: { type: 'string', example: 'Tecnología Superior en Desarrollo de Software' },
                     rol: { type: 'string', example: 'Estudiante' },
                     status: { type: 'boolean', example: true },
-                    numberReservation: { type: 'number', example: 3 }
+                    numberReservation: { type: 'number', example: 3 },
+                    lastLogin: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T08:00:00Z' },
                 }
             }
         },
@@ -609,6 +610,7 @@ export const getEstudianteByIdSchema = {
                 enableDate: { type: 'string', format: 'date-time' },
                 disableDate: { type: 'string', format: 'date-time' },
                 lastLogin: { type: 'string', format: 'date-time' },
+                loginAttempts: { type: 'integer', example: 0 },
                 createFor: {
                     type: 'object',
                     properties: {

@@ -402,7 +402,8 @@ export const getAllDocentesSchema = {
                     career: { type: 'string', example: 'Ingeniería Mecánica' },
                     otherFaculty: { type: 'string', example: 'FIEE' },
                     rol: { type: 'string', example: 'Docente' },
-                    numberReservation: { type: 'number', example: 4 }
+                    numberReservation: { type: 'number', example: 4 },
+                    lastLogin: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T08:00:00Z' },
                 }
             }
         },
@@ -458,10 +459,11 @@ export const getDocenteByIdSchema = {
                 status: { type: 'boolean', example: true },
                 numberReservation: { type: 'number', example: 4 },
                 createdDate: { type: 'string', format: 'date-time', example: '2024-06-01T12:00:00Z' },
-                updatedDate: { type: 'string', format: 'date-time', nullable: true, example: null },
+                updatedDate: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T08:00:00Z' },
                 enableDate: { type: 'string', format: 'date-time', example: '2024-06-02T09:30:00Z' },
-                disableDate: { type: 'string', format: 'date-time', nullable: true, example: null },
+                disableDate: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T08:00:00Z' },
                 lastLogin: { type: 'string', format: 'date-time', nullable: true, example: '2024-07-01T08:00:00Z' },
+                loginAttempts: { type: 'integer', example: 0 },
                 createFor: {
                     type: 'object',
                     nullable: true,
